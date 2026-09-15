@@ -170,4 +170,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 TEST_E = [502970]
 
-EMP_ID_2 = ['503654']
+EMP_ID_2 = ['503654','502971']
