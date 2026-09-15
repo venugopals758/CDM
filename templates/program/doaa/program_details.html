@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block body %}
+<style>
+    .nav-wrapper {
+        padding: 1rem 0;
+        border-top-left-radius: 0.375rem;
+        border-top-right-radius: 0.375rem;
+    }
+    .nav {
+        display: flex;
+        margin-bottom: 0;
+        padding-left: 0;
+        list-style: none;
+        flex-wrap: wrap;
+    }
+    .nav-pills .nav-item:not(:last-child) {
+        padding-right: 1rem;
+    }
+    .nav-fill .nav-item {
+        text-align: center;
+        flex: 1 1 auto;
+    }
+
+    .nav-pills .nav-link {
+        font-size: .875rem;
+        font-weight: 500;
+        padding: 0.75rem 1rem;
+        transition: all .15s ease;
+        color: #007367;
+        background-color: #fff;
+        box-shadow: 0 4px 6px rgba(50, 50, 93, .11), 0 1px 3px rgba(0, 0, 0, .08);
+    }
+    .nav-pills .nav-link {
+        border-radius: 0.375rem;
+    }
+    .nav-pills .nav-link.active,
+    .nav-pills .show > .nav-link {
+        background-color: #007367 !important;
+        color: #fff !important;
+        box-shadow: 0 4px 6px rgba(0, 115, 103, .3), 0 1px 3px rgba(0, 0, 0, .08);
+    }
+</style>
+
+<section class="content-container contentContainer" id="homeSection">
+    <div class="d-flex align-items-center justify-content-between mb-2">
+        <h5 class="text-left mb-0" style="color:#007367;">Program Details</h5>
+        <a href="/programs" class="btn btn_gitam_outline rounded-pill btn-sm d-inline-flex align-items-center gap-1" id="backBtn" style="white-space:nowrap;">
+            <i class="bx bx-arrow-back"></i><span>Back</span>
+        </a>
+    </div>
+    <div class="box-container">
+        <div class="nav-wrapper">
+            <ul class="nav nav-pills nav-fill flex-column flex-md-row" id="programDetailsTabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" data-bs-toggle="tab" href="#previewTab"><i class="fa fa-file-alt mr-2"></i>Program Preview</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#timelineTab"><i class="far fa-comment-dots mr-2"></i>Timeline</a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="tab-content mt-3">
+            <div class="tab-pane fade show active" id="previewTab" role="tabpanel">
+                {% include 'program/forms/program_preview.html' %}
+            </div>
+
+            <div class="tab-pane fade" id="timelineTab" role="tabpanel">
+                {% include 'program/time_line.html' %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+$(document).ready(function () {
+    var tabIds = ['previewTab', 'timelineTab'];
+
+    function activateTab(tabNumber) {
+        var targetId = tabIds[tabNumber - 1];
+        if (!targetId) {
+            return;
+        }
+        $('#programDetailsTabs a[data-bs-toggle="tab"]').removeClass('active');
+        $('.tab-pane').removeClass('active show');
+
+        $('#programDetailsTabs a[href="#' + targetId + '"]').addClass('active');
+        $('#' + targetId).addClass('active show');
+    }
+
+    var params = new URLSearchParams(window.location.search);
+    var currentTab = parseInt(params.get('tab'));
+    if (currentTab) {
+        activateTab(currentTab);
+    }
+
+    $('#programDetailsTabs a[data-bs-toggle="tab"]').on('shown.bs.tab', function () {
+        var tabNumber = tabIds.indexOf($(this).attr('href').substring(1)) + 1;
+        var url = new URL(window.location.href);
+        url.searchParams.set('tab', tabNumber);
+        history.replaceState(null, '', url);
+    });
+});
+</script>
+{% endblock %}

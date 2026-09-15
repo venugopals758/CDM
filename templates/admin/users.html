@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load user_tags %}
+{% block body %}
+<section class="content-container contentContainer" id="homeSection">
+    <div class="d-flex justify-content-between align-items-center pb-1 ">
+        <h3 class="page-title">Users</h3>
+        <div class="d-flex gap-1">
+            <a href="/user/admin/users/add" class="btn btn-primary btn-sm d-inline-flex align-items-center" style="white-space:nowrap;">
+                <span>+ Add User</span>
+            </a>
+        </div>
+    </div>
+    <div class="box-container">
+        <div class="table-responsive">
+            <table id="usersTable" class="table table-bordered nowrap" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>S.No</th>
+                        <th>Employee ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Campus</th>
+                        <th>School</th>
+                        <th>Department</th>
+                        <th>Role</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ u.username }}</td>
+                        <td>{{ u.first_name }} {{ u.last_name }}</td>
+                        <td>{{ u.email|default:"—" }}</td>
+                        <td>{{ u.phone|default:"—" }}</td>
+                        <td>{{ u.campus|default:"—" }}</td>
+                        <td>{{ u.school_code|default:"—" }}</td>
+                        <td>{{ u.dept_code|default:"—" }}</td>
+                        <td>{{ u.active_role|default:u.role_names|default:"—" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<script>
+$(document).ready(function () {
+    $('#usersTable').DataTable();
+});
+</script>
+
+{% endblock %}

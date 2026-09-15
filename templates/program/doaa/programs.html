@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load user_tags %}
+{% block body %}
+<section class="content-container contentContainer" id="homeSection">
+    <h3 class="page-title">Programs</h3>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-6">
+            <div class="box-container text-center py-3">
+                <div class="fs-3 fw-bold" style="color:#007367;">{{ total_count }}</div>
+                <div class="text-muted">Total Programs</div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="box-container text-center py-3">
+                <div class="fs-3 fw-bold" style="color:#c99400;">{{ pending_count }}</div>
+                <div class="text-muted">Pending Review</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="box-container">
+        <div class="table-responsive">
+            <table id="programsTable" class="table table-bordered nowrap" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>S.No</th>
+                        <th>Ref No</th>
+                        <th>Program Code</th>
+                        <th>Program Level</th>
+                        <th>Batch</th>
+                        <th>Created At</th>
+                        <th>Status</th>
+                        <th>Pending At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in programs %}
+                    <tr {% if p.is_pending_here %}style="background-color:#fff3cd;"{% endif %}>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ p.ref_no|default:"—" }}</td>
+                        <td>{{ p.code|default:"—" }}</td>
+                        <td>{{ p.program_level.name|default:"—" }}</td>
+                        <td>{{ p.program_batch.name|default:"—" }}</td>
+                        <td>{{ p.created_at|date:"d-M-Y h:i A"|default:"—" }}</td>
+                        <td><span class="badge rounded-pill" style="background:#e5f0ef;color:#007367;">{{ p.program_status.name|default:"—" }}</span></td>
+                        <td>{% if p.pending_is_doaa %}Pending at DoAA{% elif p.pending_at %}{{ p.pending_at.emp_id }} | {{ p.pending_at.first_name }} {{ p.pending_at.last_name }}{% else %}—{% endif %}</td>
+                        <td>
+                            <a href="/programs/program_details/{{ p.enc_id }}" title="View">
+                                <i class="bx bx-show" style="color:#007367;font-size:18px;"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<script>
+$(document).ready(function () {
+    $('#programsTable').DataTable({
+        order: []
+    });
+});
+</script>
+
+{% endblock %}

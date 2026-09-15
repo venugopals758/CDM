@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load user_tags %}
+{% block body %}
+<section class="content-container contentContainer" id="homeSection">
+    <div class="d-flex justify-content-between align-items-center pb-1 ">
+        <h3 class="page-title">Department</h3>
+        <div class="d-flex gap-1">
+            <button type="button" class="btn btn-primary btn-sm d-inline-flex align-items-center" id="addDepartmentBtn" style="white-space:nowrap;">
+                <span>+ Add Department</span>
+            </button>
+        </div>
+    </div>
+    <div class="box-container">
+        <div class="table-responsive">
+            <table id="departmentsTable" class="table table-bordered nowrap" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>S.No</th>
+                        <th>Name</th>
+                        <th>Code</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in departments %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ d.name }}</td>
+                        <td>{{ d.code|default:"—" }}</td>
+                        <td>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input toggle_status" type="checkbox" role="switch"
+                                       data-value="{{ d.enc_id }}" {% if d.status %}checked{% endif %}>
+                            </div>
+                        </td>
+                        <td>
+                            <a href="javascript:void(0);" class="edit_department" title="Edit"
+                               data-id="{{ d.enc_id }}" data-name="{{ d.name }}" data-code="{{ d.code|default:'' }}">
+                                <i class="bx bx-edit-alt" style="color:#007367;font-size:18px;"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<div class="modal fade" id="departmentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="departmentModalTitle">Add Department</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="departmentId">
+                <div class="mb-3">
+                    <label class="form-label">Name</label>
+                    <input type="text" class="form-control" id="departmentName">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Code</label>
+                    <input type="text" class="form-control" id="departmentCode">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveDepartmentBtn">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function () {
+    $('#departmentsTable').DataTable();
+
+    $('#addDepartmentBtn').on('click', function () {
+        $('#departmentModalTitle').text('Add Department');
+        $('#departmentId').val('');
+        $('#departmentName').val('');
+        $('#departmentCode').val('');
+        $('#departmentModal').modal('show');
+    });
+
+    $(document.body).on('click', '.edit_department', function () {
+        $('#departmentModalTitle').text('Edit Department');
+        $('#departmentId').val($(this).data('id'));
+        $('#departmentName').val($(this).data('name'));
+        $('#departmentCode').val($(this).data('code'));
+        $('#departmentModal').modal('show');
+    });
+
+    $('#saveDepartmentBtn').on('click', function () {
+        var name = $('#departmentName').val().trim();
+        if (!name) {
+            Swal.fire({ title: 'Error', text: 'Name is required.', icon: 'error' });
+            return;
+        }
+        $.ajax({
+            type: 'POST',
+            url: '/user/admin/departments/save',
+            data: {
+                id: $('#departmentId').val(),
+                name: name,
+                code: $('#departmentCode').val().trim()
+            },
+            success: function (response) {
+                if (response.status === 200) {
+                    $('#departmentModal').modal('hide');
+                    location.reload();
+                } else {
+                    Swal.fire({ title: 'Error', text: response.message || 'Could not save department.', icon: 'error' });
+                }
+            },
+            error: function () {
+                Swal.fire({ title: 'Error', text: 'Could not save department. Please try again.', icon: 'error' });
+            }
+        });
+    });
+
+    $(document.body).on('change', '.toggle_status', function () {
+        var checkbox = $(this);
+        $.ajax({
+            type: 'POST',
+            url: '/user/admin/departments/toggle_status',
+            data: { id: checkbox.data('value') },
+            success: function (response) {
+                if (response.status !== 200) {
+                    checkbox.prop('checked', !checkbox.prop('checked'));
+                    Swal.fire({ title: 'Error', text: response.message || 'Could not update status.', icon: 'error' });
+                }
+            },
+            error: function () {
+                checkbox.prop('checked', !checkbox.prop('checked'));
+                Swal.fire({ title: 'Error', text: 'Could not update status. Please try again.', icon: 'error' });
+            }
+        });
+    });
+});
+</script>
+
+{% endblock %}

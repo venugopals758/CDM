@@ -1,0 +1,421 @@
+<form id="programStructureForm" method="POST">
+{% csrf_token %}
+<input type="hidden" name="program_id" id="program_structure_program_id" value="{{ enc_program_id }}">
+
+{% if not tracks %}
+<label class="form-label mb-2">Course Category Credit Structure &ndash; {{ program.title|default:"Program" }}</label>
+
+<div class="table-responsive mb-4">
+    <table class="table table-bordered table-sm align-middle mb-0 course-structure-table" id="courseStructureTable_default" data-target="default" data-name-prefix="default_" data-track-id="" data-is-exit="0">
+        <thead class="table-light">
+            <tr>
+                <th style="min-width:220px;">Course Category</th>
+                <th style="min-width:110px;">Category Code</th>
+                <th style="min-width:110px;">Credits</th>
+                <th style="min-width:110px;">Percentage (%)</th>
+                <th style="width:40px;">Action</th>
+            </tr>
+        </thead>
+        <tbody id="courseStructureBody_default">
+            {% for row in course_structure_default %}
+            <tr class="category-row committed-row">
+                <td>{{ row.course_category.category }}<input type="hidden" class="committed-category-id" value="{{ row.course_category_id }}"></td>
+                <td>{{ row.course_category.code }}</td>
+                <td class="no_of_credits">{{ row.no_of_credits|default_if_none:"" }}</td>
+                <td class="percentage_of_credits" data-value="{{ row.percentage_of_credits|default_if_none:"0" }}">{{ row.percentage_of_credits|floatformat:2 }}</td>
+                <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger remove-row-btn" data-row-id="{{ row.enc_id }}" title="Remove"><i class="bx bx-trash"></i></button></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr class="course-structure-total-row" style="display:none;">
+                <td colspan="2" class="text-end fw-bold">Total</td>
+                <td class="fw-bold total-credits">0</td>
+                <td class="fw-bold total-percent">0.00</td>
+                <td></td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+{% endif %}
+
+{% for track in tracks %}
+<label class="form-label mb-2">Course Category Credit Structure &ndash; {{ track.name }}</label>
+
+<div class="table-responsive mb-4">
+    <table class="table table-bordered table-sm align-middle mb-0 course-structure-table" id="courseStructureTable_track_{{ track.id }}" data-target="track_{{ track.id }}" data-name-prefix="track_{{ track.id }}_" data-track-id="{{ track.id }}" data-is-exit="0">
+        <thead class="table-light">
+            <tr>
+                <th style="min-width:220px;">Course Category</th>
+                <th style="min-width:110px;">Category Code</th>
+                <th style="min-width:110px;">Credits</th>
+                <th style="min-width:110px;">Percentage (%)</th>
+                <th style="width:40px;">Action</th>
+            </tr>
+        </thead>
+        <tbody id="courseStructureBody_track_{{ track.id }}">
+            {% for row in track.rows %}
+            <tr class="category-row committed-row">
+                <td>{{ row.course_category.category }}<input type="hidden" class="committed-category-id" value="{{ row.course_category_id }}"></td>
+                <td>{{ row.course_category.code }}</td>
+                <td class="no_of_credits">{{ row.no_of_credits|default_if_none:"" }}</td>
+                <td class="percentage_of_credits" data-value="{{ row.percentage_of_credits|default_if_none:"0" }}">{{ row.percentage_of_credits|floatformat:2 }}</td>
+                <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger remove-row-btn" data-row-id="{{ row.enc_id }}" title="Remove"><i class="bx bx-trash"></i></button></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr class="course-structure-total-row" style="display:none;">
+                <td colspan="2" class="text-end fw-bold">Total</td>
+                <td class="fw-bold total-credits">0</td>
+                <td class="fw-bold total-percent">0.00</td>
+                <td></td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+{% endfor %}
+
+<hr class="my-4">
+
+<div id="exitPlanStructureSection" class="{% if not program.has_exit_plan %}d-none{% endif %}">
+    <label class="form-label mb-2">Course Category Credit Structure &ndash; Exit Plan</label>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-sm align-middle mb-0 course-structure-table" id="courseStructureTable_exit" data-target="exit" data-name-prefix="exit_" data-is-exit="1">
+            <thead class="table-light">
+                <tr>
+                    <th style="min-width:220px;">Course Category</th>
+                    <th style="min-width:110px;">Category Code</th>
+                    <th style="min-width:110px;">Credits</th>
+                    <th style="min-width:110px;">Percentage (%)</th>
+                    <th style="width:40px;">Action</th>
+                </tr>
+            </thead>
+            <tbody id="courseStructureBody_exit">
+                {% for row in course_structure_exit %}
+                <tr class="category-row committed-row">
+                    <td>{{ row.course_category.category }}<input type="hidden" class="committed-category-id" value="{{ row.course_category_id }}"></td>
+                    <td>{{ row.course_category.code }}</td>
+                    <td class="no_of_credits">{{ row.no_of_credits|default_if_none:"" }}</td>
+                    <td class="percentage_of_credits" data-value="{{ row.percentage_of_credits|default_if_none:"0" }}">{{ row.percentage_of_credits|floatformat:2 }}</td>
+                    <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger remove-row-btn" data-row-id="{{ row.enc_id }}" title="Remove"><i class="bx bx-trash"></i></button></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="course-structure-total-row" style="display:none;">
+                    <td colspan="2" class="text-end fw-bold">Total</td>
+                    <td class="fw-bold total-credits">0</td>
+                    <td class="fw-bold total-percent">0.00</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <hr class="my-4">
+</div>
+
+    <ul class="pager wizard twitter-bs-wizard-pager-link form-footer">
+        <li class="previous">
+            <a href="javascript: void(0);" class="btn btn-secondary prev_btn" data-id="2">Previous</a>
+        </li>
+        <li>
+            <button type="button" class="btn btn-primary" id="step_2_save">Save & Next</button>
+        </li>
+    </ul>
+</form>
+
+<script id="courseCategoryOptionsTemplate" type="application/json">
+    [{% for cat in course_categories %}{"id": {{ cat.id }}, "name": "{{ cat.category|escapejs }}", "code": "{{ cat.code|escapejs }}"}{% if not forloop.last %},{% endif %}{% endfor %}]
+</script>
+
+<style>
+    .course-structure-table .committed-row td { background-color: #f8f9fa; }
+</style>
+
+<script>
+$(document).ready(function () {
+
+    var categoryOptions = JSON.parse($('#courseCategoryOptionsTemplate').text());
+    var minimumCredits = {% if program.minimum_credits %}{{ program.minimum_credits }}{% else %}null{% endif %};
+    var exitMinimumCredits = {% if program.exit_minimum_credits %}{{ program.exit_minimum_credits }}{% else %}null{% endif %};
+
+    // Toggle the Exit Plan structure table based on the Yes/No answer
+    function toggleExitPlanSection() {
+        $('#exitPlanStructureSection').toggle($('#has_exit_plan').val() === '1');
+    }
+    $(document.body).on('change', '#has_exit_plan', toggleExitPlanSection);
+    toggleExitPlanSection();
+
+    // One independent set of add/remove/total handlers per table (one per track, plus exit), keyed by data-target.
+    // Each table always keeps exactly one editable "active" row at the bottom; clicking its Add button
+    // validates + locks it into a plain-text committed row and appends a fresh empty active row below.
+    function initCourseStructureTable(table) {
+        var target = table.data('target');
+        var body = $('#courseStructureBody_' + target);
+        var namePrefix = table.data('name-prefix') || '';
+        var trackId = table.data('track-id') || '';
+        var isExit = table.data('is-exit') === 1 || table.data('is-exit') === '1';
+
+        function committedCategoryIds() {
+            return body.find('.committed-row .committed-category-id').map(function () {
+                return $(this).val();
+            }).get();
+        }
+
+        function categorySelectHtml() {
+            var takenIds = committedCategoryIds();
+            var html = '<select class="form-select form-select-sm row-category-select">' +
+                '<option value="" selected disabled hidden>Select category</option>';
+            $.each(categoryOptions, function (i, cat) {
+                var disabled = takenIds.indexOf(String(cat.id)) !== -1;
+                html += '<option value="' + cat.id + '" data-code="' + cat.code + '" data-name="' + cat.name + '"' + (disabled ? ' disabled' : '') + '>' + cat.name + '</option>';
+            });
+            html += '</select>';
+            return html;
+        }
+
+        function activeRowHtml() {
+            return '<tr class="category-row active-row">' +
+                '<td>' + categorySelectHtml() + '</td>' +
+                '<td><input type="text" class="form-control form-control-sm row-category-code" readonly></td>' +
+                '<td><input type="number" min="0" class="form-control form-control-sm no_of_credits"></td>' +
+                '<td><input type="number" min="0" step="0.01" class="form-control form-control-sm percentage_of_credits"></td>' +
+                '<td class="text-center"><button type="button" class="btn btn-sm btn-success add-row-btn" title="Add"><i class="bx bx-plus"></i></button></td>' +
+                '</tr>';
+        }
+
+        function ensureActiveRow() {
+            if (body.find('tr.active-row').length === 0) {
+                body.append(activeRowHtml());
+            }
+        }
+
+        function toggleTotalsVisibility() {
+            table.find('.course-structure-total-row').toggle(body.find('tr.committed-row').length > 0);
+        }
+
+        function calculateTotals() {
+            var totals = { credits: 0, percent: 0 };
+            body.find('tr.committed-row').each(function () {
+                totals.credits += parseFloat($(this).find('.no_of_credits').text()) || 0;
+                // Sum the precise (unrounded) percentage so it matches the credit total exactly,
+                // instead of accumulating drift from summing already-rounded display values
+                totals.percent += parseFloat($(this).find('.percentage_of_credits').attr('data-value')) || 0;
+            });
+            table.find('.total-credits').text(totals.credits);
+            table.find('.total-percent').text(totals.percent.toFixed(2));
+        }
+
+        function refreshActiveRowOptions() {
+            var takenIds = committedCategoryIds();
+            body.find('tr.active-row .row-category-select option[value]').each(function () {
+                if (!$(this).val()) return;
+                $(this).prop('disabled', takenIds.indexOf($(this).val()) !== -1);
+            });
+        }
+
+        body.on('change', '.row-category-select', function () {
+            var selected = $(this).find('option:selected');
+            $(this).closest('tr').find('.row-category-code').val(selected.data('code') || '');
+        });
+
+        body.on('click', '.add-row-btn', function () {
+            var addBtn = $(this);
+            var row = addBtn.closest('tr');
+            var select = row.find('.row-category-select');
+            var selected = select.find('option:selected');
+            var fields = {
+                no_of_credits: row.find('.no_of_credits'),
+                percentage_of_credits: row.find('.percentage_of_credits')
+            };
+
+            if (!select.val()) {
+                Swal.fire({ title: 'Missing category', text: 'Please select a course category first.', icon: 'warning' });
+                return;
+            }
+            var missing = false;
+            $.each(fields, function (name, input) {
+                if (input.val() === '' || input.val() === null) {
+                    missing = true;
+                }
+            });
+            if (missing) {
+                Swal.fire({ title: 'Incomplete row', text: 'Please fill all the credit fields before adding.', icon: 'warning' });
+                return;
+            }
+            if (!$('#program_structure_program_id').val()) {
+                Swal.fire({ title: 'Error', text: 'Please complete Basic Details first.', icon: 'error' });
+                return;
+            }
+
+            var catId = select.val();
+            var catName = selected.data('name');
+            var catCode = selected.data('code');
+
+            addBtn.prop('disabled', true);
+            $.ajax({
+                type: 'POST',
+                url: '/programs/add_program_structure_row',
+                data: {
+                    csrfmiddlewaretoken: $('#programStructureForm input[name=csrfmiddlewaretoken]').val(),
+                    program_id: $('#program_structure_program_id').val(),
+                    is_exit: isExit ? '1' : '0',
+                    track: trackId,
+                    course_category: catId,
+                    no_of_credits: fields.no_of_credits.val(),
+                    percentage_of_credits: fields.percentage_of_credits.val()
+                },
+                success: function (response) {
+                    if (response.status !== 200) {
+                        addBtn.prop('disabled', false);
+                        Swal.fire({ title: 'Error', text: response.message || 'Could not save this row.', icon: 'error' });
+                        return;
+                    }
+
+                    var enteredPercent = parseFloat(fields.percentage_of_credits.val()) || 0;
+                    var committedRow = '<tr class="category-row committed-row">' +
+                        '<td>' + catName + '<input type="hidden" class="committed-category-id" value="' + catId + '"></td>' +
+                        '<td>' + catCode + '</td>' +
+                        '<td class="no_of_credits">' + fields.no_of_credits.val() + '</td>' +
+                        '<td class="percentage_of_credits" data-value="' + enteredPercent + '">' + enteredPercent.toFixed(2) + '</td>' +
+                        '<td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger remove-row-btn" data-row-id="' + response.enc_row_id + '" title="Remove"><i class="bx bx-trash"></i></button></td>' +
+                        '</tr>';
+
+                    row.replaceWith(committedRow);
+                    ensureActiveRow();
+                    refreshActiveRowOptions();
+                    toggleTotalsVisibility();
+                    calculateTotals();
+                },
+                error: function () {
+                    addBtn.prop('disabled', false);
+                    Swal.fire({ title: 'Error', text: 'Could not save this row. Please try again.', icon: 'error' });
+                }
+            });
+        });
+
+        body.on('click', '.remove-row-btn', function () {
+            var btn = $(this);
+            var row = btn.closest('tr');
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: 'You want to remove this course category row!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, remove it!'
+            }).then(function (result) {
+                if (!result.isConfirmed) {
+                    return;
+                }
+                btn.prop('disabled', true);
+                $.ajax({
+                    type: 'POST',
+                    url: '/programs/delete_program_structure_row',
+                    data: {
+                        csrfmiddlewaretoken: $('#programStructureForm input[name=csrfmiddlewaretoken]').val(),
+                        row_id: btn.data('row-id')
+                    },
+                    success: function (response) {
+                        if (response.status !== 200) {
+                            btn.prop('disabled', false);
+                            Swal.fire({ title: 'Error', text: response.message || 'Could not remove this row.', icon: 'error' });
+                            return;
+                        }
+                        row.remove();
+                        refreshActiveRowOptions();
+                        toggleTotalsVisibility();
+                        calculateTotals();
+                    },
+                    error: function () {
+                        btn.prop('disabled', false);
+                        Swal.fire({ title: 'Error', text: 'Could not remove this row. Please try again.', icon: 'error' });
+                    }
+                });
+            });
+        });
+
+        ensureActiveRow();
+        toggleTotalsVisibility();
+        calculateTotals();
+    }
+
+    $('.course-structure-table').each(function () {
+        initCourseStructureTable($(this));
+    });
+
+    // Save & Next: rows are already saved individually via their own Add buttons,
+    // so this only needs to advance the program's active_step and move to the Outcomes tab
+    $('#step_2_save').on('click', function () {
+        if (!$('#program_structure_program_id').val()) {
+            Swal.fire({ title: 'Error', text: 'Please complete Basic Details first.', icon: 'error' });
+            return;
+        }
+
+        var shortfallTrack = null;
+        $('.course-structure-table[data-is-exit="0"]').each(function () {
+            var table = $(this);
+            var hasRows = table.find('tbody tr.committed-row').length > 0;
+            var total = parseFloat(table.find('.total-credits').text()) || 0;
+            var required = minimumCredits;
+
+            if (required ? total < required : !hasRows) {
+                shortfallTrack = { label: table.closest('div').prev('label').text() || 'a track', total: total, required: required };
+                return false;
+            }
+        });
+        if (shortfallTrack) {
+            var msg = shortfallTrack.required
+                ? 'Total credits for "' + shortfallTrack.label + '" must be at least ' + shortfallTrack.required + ' (currently ' + shortfallTrack.total + ').'
+                : 'Add at least one course category to every track’s structure before continuing.';
+            Swal.fire({ title: 'Minimum credits not met', text: msg, icon: 'warning' });
+            return;
+        }
+
+        if ($('#has_exit_plan').val() === '1') {
+            var exitTable = $('#courseStructureTable_exit');
+            var exitTotal = parseFloat(exitTable.find('.total-credits').text()) || 0;
+            var exitHasRows = $('#courseStructureBody_exit .committed-row').length > 0;
+            var exitRequired = exitMinimumCredits;
+
+            if (exitRequired ? exitTotal < exitRequired : !exitHasRows) {
+                var exitMsg = exitRequired
+                    ? 'Total credits for the Exit Plan structure must be at least ' + exitRequired + ' (currently ' + exitTotal + ').'
+                    : 'Add at least one course category to the Exit Plan structure before continuing.';
+                Swal.fire({ title: 'Minimum credits not met', text: exitMsg, icon: 'warning' });
+                return;
+            }
+        }
+
+        $('#overlay').fadeIn();
+        $.ajax({
+            type: 'POST',
+            url: '/programs/save_program_structure',
+            data: {
+                csrfmiddlewaretoken: $('#programStructureForm input[name=csrfmiddlewaretoken]').val(),
+                program_id: $('#program_structure_program_id').val()
+            },
+            success: function (response) {
+                $('#overlay').fadeOut();
+                if (response.status === 200) {
+                    var programId = $('#program_structure_program_id').val();
+                    Swal.fire({ title: 'Saved!', icon: 'success', timer: 1000, showConfirmButton: false }).then(function () {
+                        window.location.href = '/programs/edit_program/' + programId;
+                    });
+                } else {
+                    Swal.fire({ title: 'Error', text: response.message, icon: 'error' });
+                }
+            },
+            error: function () {
+                $('#overlay').fadeOut();
+                Swal.fire({ title: 'Error', text: 'Could not save. Please try again.', icon: 'error' });
+            }
+        });
+    });
+});
+</script>

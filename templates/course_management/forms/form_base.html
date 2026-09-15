@@ -1,0 +1,302 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block body %}
+<style>
+    /* Chrome, Safari, Edge, Opera */
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+    }
+    /* Firefox */
+    input[type=number] {
+    -moz-appearance: textfield;
+    }
+    .card-header {
+        background-color: #f0dfc091!important;
+        color:#007367;
+        text-align: center!important;
+    }
+    .modal-header {
+        background:  #f0dfc091!important;
+    }
+    .wizard-shell {
+        background: #fff;
+        padding: 24px;
+    }
+    .step-track-wrap {
+        margin: -24px -24px 24px;
+        padding: 18px 24px 14px;
+        border-bottom: 1px solid #eee1cf;
+    }
+    .step-panel {
+        min-width: 0;
+    }
+    .step-track {
+        display: flex;
+        align-items: flex-start;
+    }
+    .step-track .step-item {
+        flex: 1;
+        position: relative;
+        text-align: center;
+        text-decoration: none;
+    }
+    .step-track .step-item:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        top: 12px;
+        left: 50%;
+        width: 100%;
+        height: 2px;
+        background: #e0d6c8;
+        z-index: 0;
+    }
+    .step-track .step-item.state-completed:not(:last-child)::after {
+        background: #007367;
+    }
+    .step-track .step-circle {
+        position: relative;
+        z-index: 1;
+        width: 24px;
+        height: 24px;
+        margin: 0 auto 8px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 700;
+        background: #fff;
+        border: 2px solid #d8cdbd;
+        color: #b0a494;
+    }
+    .step-track .step-item.state-completed .step-circle {
+        background: #007367;
+        border-color: #007367;
+        color: #fff;
+    }
+    .step-track .step-item.state-active .step-circle {
+        background: #007367;
+        border-color: #f2994a;
+        color: #fff;
+    }
+    .step-track .step-title {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: #b0a494;
+    }
+    .step-track .step-item.state-completed .step-title,
+    .step-track .step-item.state-active .step-title {
+        color: #1a1a1a;
+    }
+    .step-track .step-item.state-active::before {
+        content: '';
+        position: absolute;
+        bottom: -14px;
+        left: 15%;
+        right: 15%;
+        height: 3px;
+        background: #007367;
+        border-radius: 2px;
+    }
+    /* Flat "panel" sections: a heading + divider instead of a bordered/boxed card */
+    .form-section {
+        margin-bottom: 30px;
+    }
+    .form-section:last-of-type {
+        margin-bottom: 0;
+    }
+    .form-section-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        color: #007367;
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 16px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid #eee1cf;
+    }
+    .form-section-title .title-text {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .form-section-title i {
+        font-size: 18px;
+    }
+</style>
+
+<section class="content-container contentContainer" id="homeSection">
+    <div >
+        <div class="d-flex align-items-center justify-content-between mb-2">
+            <h5 class="text-left mb-0" style="color:#007367;">Add Course</h5>
+            <a href="/courses" class="btn btn_gitam_outline rounded-pill btn-sm d-inline-flex align-items-center gap-1" id="backBtn" style="white-space:nowrap;">
+                <i class="bx bx-arrow-back"></i><span>Back</span>
+            </a>
+        </div>
+        <div class="form-body page-shown ">
+            <div id="basic-pills-wizard" class="twitter-bs-wizard wizard-shell">
+                <div class="step-track-wrap">
+                    <div class="step-track" role="tablist">
+                        <a href="#" class="step-item tab-link step step01 {% if not course %}state-active{% elif course.active_step > 1 %}state-completed{% else %}state-active{% endif %} {% if not course %}active{% endif %}" data-tab="stepTab1">
+                            <span class="step-circle">1</span>
+                            <span class="step-title">About the course</span>
+                        </a>
+                        <a href="#" class="step-item tab-link {% if course.active_step == 2 %}step step02 state-active active{% elif course.active_step > 2 %}state-completed{% endif %}" data-tab="stepTab2">
+                            <span class="step-circle">2</span>
+                            <span class="step-title">Syllabus</span>
+                        </a>
+                        <a href="#" class="step-item tab-link {% if course.active_step == 3 %}step step03 state-active active{% elif course.active_step > 3 %}state-completed{% endif %}" data-tab="stepTab3">
+                            <span class="step-circle">3</span>
+                            <span class="step-title">Bibliography</span>
+                        </a>
+                        <a href="#" class="step-item tab-link {% if course.active_step == 4 %}step step04 state-active active{% elif course.active_step > 4 %}state-completed{% endif %}" data-tab="stepTab4">
+                            <span class="step-circle">4</span>
+                            <span class="step-title">COPO Mapping</span>
+                        </a>
+                        <a href="#" class="step-item tab-link {% if course.active_step == 5 %}step step05 state-active active{% endif %}" data-tab="stepTab5">
+                            <span class="step-circle">5</span>
+                            <span class="step-title">Final Preview</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="step-panel">
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+                    <div class="tab-content ">
+                        <div class="tab-pane  {% if not course %} active show {% endif %}" id="stepTab1">
+                            {% include 'course_management/forms/about_the_course.html' %}
+                        </div>
+                        <div class="tab-pane  {% if course.active_step == 2 %}active show{% endif %}" id="stepTab2">
+                            {% include 'course_management/forms/syllabus.html' %}
+                        </div>
+                        <div class="tab-pane  {% if course.active_step == 3 %}active show{% endif %}" id="stepTab3">
+                            {% include 'course_management/forms/bibliography.html' %}
+                        </div>
+                        <div class="tab-pane  {% if course.active_step == 4 %}active show{% endif %}" id="stepTab4">
+                            {% include 'course_management/forms/copo_mapping.html' %}
+                        </div>
+                        <div class="tab-pane {% if course.active_step == 5 %}active show{% endif %}" id="stepTab5">
+                            {% include 'course_management/forms/final_preview.html' %}
+                            <hr>
+                            <div >
+                                <span>Step 5 of 5</span>
+                            </div>
+                            <ul class="pager wizard twitter-bs-wizard-pager-link form-footer">
+                                <li class="previous">
+                                    <a href="javascript: void(0);" class="btn btn-secondary prev_btn d-inline-flex align-items-center" data-id="5">Previous</a>
+                                </li>
+                                <li>
+                                    <a href="/courses/{{enc_course_id}}" class="btn btn-primary final-submit-btn d-inline-flex align-items-center">Final Submit</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </form>
+                </div>
+            </div>
+        </div>
+       
+    </div>
+</section>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+<script>
+// Attach the CSRF token to every same-origin POST made via $.ajax on this page (Django's documented pattern),
+// since none of the wizard's ajax() calls set it themselves.
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+$.ajaxSetup({
+    beforeSend: function (xhr, settings) {
+        if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader('X-CSRFToken', getCookie('csrftoken'));
+        }
+    }
+});
+
+$(document).ready(function() {
+    $('.final-submit-btn').on('click', function(e) {
+        e.preventDefault();
+        var link = $(this).attr('href');
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You want to submit this request!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, submit it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+				$('#overlay').fadeIn();
+                window.location.href = link;
+            }
+        });
+    });
+});
+
+    $(document.body).on('click', '.next_btn', function () {
+        let currentStep = parseInt($(this).data('id'));
+        let nextStep = currentStep + 1;
+        $(`.step0${currentStep}`).removeClass("active");
+        $(`.step0${nextStep}`).addClass("active");
+        $(`#stepTab${nextStep}`).addClass("active").siblings().removeClass("active");
+    });
+
+    $(document.body).on('click', '.prev_btn', function () {
+        let currentStep = parseInt($(this).data('id'));
+        let prevStep = currentStep - 1;
+        $(`.step0${currentStep}`).removeClass("active");
+        $(`.step0${prevStep}`).addClass("active");
+        $(`#stepTab${prevStep}`).addClass("active").siblings().removeClass("active");
+    });
+
+
+    $(".step").click(function () {
+        $(".step").removeClass("active");
+        $(this).addClass("active");
+    });
+
+    $(".step01").click(function () {
+        $("#stepTab1").addClass("active").siblings().removeClass("active");
+    });
+
+    $(document.body).on('click', '.step02', function () {
+        $("#stepTab2").addClass("active").siblings().removeClass("active");
+
+    });
+
+    $(document.body).on('click', '.step03', function () {
+        $("#stepTab3").addClass("active").siblings().removeClass("active");
+
+    });
+
+    $(document.body).on('click', '.step04', function () {
+        $("#stepTab4").addClass("active").siblings().removeClass("active");
+
+    });
+
+    $(document.body).on('click', '.step05', function () {
+        $("#stepTab5").addClass("active").siblings().removeClass("active");
+
+    });
+
+</script>
+
+{% endblock %}

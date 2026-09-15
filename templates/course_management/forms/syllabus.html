@@ -1,0 +1,355 @@
+{% load static %}
+<style>
+    .syllabus-summary-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12.5px;
+    }
+    .syllabus-summary-table th, .syllabus-summary-table td {
+        border: 1px solid #e7ded9;
+        padding: 4px 6px;
+    }
+    .syllabus-summary-table th {
+        background: rgb(251, 246, 236);
+        font-weight: 600;
+        text-align: center;
+    }
+    .syllabus-summary-table .form-control {
+        padding: 2px 6px;
+        font-size: 12.5px;
+        height: 28px;
+        text-align: center;
+    }
+    .pp-table, .unit-table, .practical-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12.5px;
+        margin-top: 8px;
+    }
+    .pp-table th, .pp-table td, .practical-table th, .practical-table td {
+        border: 1px solid #e7ded9;
+        padding: 6px 8px;
+        vertical-align: middle;
+    }
+    .pp-table th, .practical-table th {
+        background: rgb(251, 246, 236);
+        font-weight: 600;
+    }
+    .section-heading {
+        color: #007367;
+        text-align: center;
+        margin-top: 28px;
+    }
+    .unit-block {
+        border: 1px solid #e7ded9;
+        border-radius: 8px;
+        padding: 12px;
+        margin-top: 14px;
+    }
+    .unit-block .unit-header {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+    .unit-block .unit-header .unit-badge {
+        background: rgb(251, 246, 236);
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    .subunit-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12.5px;
+        margin-top: 10px;
+    }
+    .subunit-table th, .subunit-table td {
+        border: 1px solid #e7ded9;
+        padding: 6px 8px;
+    }
+    .subunit-table th {
+        background: rgb(251, 246, 236);
+        font-weight: 600;
+    }
+    .unit-header .unit-title {
+        flex: 1;
+    }
+</style>
+
+<div class="fieldset-content">
+    <div class="form-section">
+        <div class="form-section-title"><span class="title-text"><i class="bx bx-time-five"></i>Credit Hours (from Step 1)</span></div>
+        <table class="syllabus-summary-table">
+            <tr>
+                <th style="width:12%;"></th>
+                <th>Lecture (L)</th>
+                <th>Tutorial (T)</th>
+                <th>Practical (P)</th>
+                <th>Seminar (S)</th>
+                <th>Project (J)</th>
+                <th>Credits (C)</th>
+                <th>Total Contact Hours</th>
+            </tr>
+            <tr>
+                <td>Hours per Week</td>
+                <td><input disabled type="text" id="summary_L" value="{{ course_details.L|default:'0' }}" class="form-control"></td>
+                <td><input disabled type="text" id="summary_T" value="{{ course_details.T|default:'0' }}" class="form-control"></td>
+                <td><input disabled type="text" id="summary_P" value="{{ course_details.P|default:'0' }}" class="form-control"></td>
+                <td><input disabled type="text" id="summary_S" value="{{ course_details.S|default:'0' }}" class="form-control"></td>
+                <td><input disabled type="text" id="summary_J" value="{{ course_details.J|default:'0' }}" class="form-control"></td>
+                <td rowspan="2"><input disabled type="text" id="summary_C" value="{{ course_details.C|default:'0' }}" class="form-control"></td>
+                <td rowspan="2"><input disabled type="text" id="summary_total_hours" value="{{ course_details.total_no_of_contact_hours|default:'0' }}" class="form-control"></td>
+            </tr>
+            <tr>
+                <td>Hours per Semester</td>
+                <td><input disabled type="text" id="summary_L_hours" value="{{ course_details.L_hours|default:'0' }}" class="form-control"></td>
+                <td><input disabled type="text" id="summary_T_hours" value="{{ course_details.T_hours|default:'0' }}" class="form-control"></td>
+                <td><input disabled type="text" id="summary_P_hours" value="{{ course_details.P_hours|default:'0' }}" class="form-control"></td>
+                <td><input disabled type="text" id="summary_S_hours" value="{{ course_details.S_hours|default:'0' }}" class="form-control"></td>
+                <td><input disabled type="text" id="summary_J_hours" value="{{ course_details.J_hours|default:'0' }}" class="form-control"></td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="form-section">
+        <div class="form-section-title"><span class="title-text"><i class="bx bx-list-check"></i>Proposed Programme</span></div>
+        <table class="pp-table">
+            <thead>
+                <tr>
+                    <th style="width:6%;">S No</th>
+                    <th>Proposed Programme Name</th>
+                    <th style="width:14%;">POs</th>
+                    <th style="width:14%;">PSOs</th>
+                    <th style="width:6%;"></th>
+                </tr>
+            </thead>
+            <tbody id="proposedProgramsBody"></tbody>
+        </table>
+        <div class="text-end mt-2">
+            <button type="button" id="addProposedProgramBtn" class="btn btn_gitam_outline rounded-pill btn-sm">+ Add More</button>
+        </div>
+    </div>
+
+    <div class="form-section">
+        <div class="form-section-title"><span class="title-text"><i class="bx bx-book-open"></i>Theory</span></div>
+        <div id="unitsContainer"></div>
+        <div class="text-end mt-2">
+            <button type="button" id="addUnitBtn" class="btn btn_gitam_outline rounded-pill btn-sm">+ Add Unit</button>
+        </div>
+    </div>
+
+    <div class="form-section" id="practicalSection">
+        <div class="form-section-title">
+            <span class="title-text"><i class="bx bx-flask"></i>Practical</span>
+            <span style="font-size:13px;font-weight:500;color:#555;">{{ course_details.P_hours|default:'0' }} Hrs</span>
+        </div>
+        <table class="practical-table">
+            <thead>
+                <tr>
+                    <th style="width:10%;">Experiment</th>
+                    <th>Topic</th>
+                    <th style="width:6%;"></th>
+                </tr>
+            </thead>
+            <tbody id="practicalsBody"></tbody>
+        </table>
+        <div class="text-end mt-2">
+            <button type="button" id="addPracticalBtn" class="btn btn_gitam_outline rounded-pill btn-sm">+ Add more</button>
+        </div>
+    </div>
+
+    <input type="hidden" name="proposed_programs_json" id="proposed_programs_json">
+    <input type="hidden" name="units_json" id="units_json">
+    <input type="hidden" name="practicals_json" id="practicals_json">
+
+    <div class="text-end mt-4">
+        <button type="button" class="btn btn-secondary prev_btn me-2" onclick="document.getElementById('step').value='2';">Previous</button>
+        <button type="submit" class="btn btn-primary" onclick="return submitSyllabusStep();">Save &amp; Next</button>
+    </div>
+</div>
+
+<script>
+(function () {
+    var PROGRAMS_OPTIONS = {{ programs_options_json|default:"[]"|safe }};
+    var EXISTING_PROPOSED_PROGRAMS = {{ proposed_programs_json|default:"[]"|safe }};
+    var EXISTING_UNITS = {{ units_json|default:"[]"|safe }};
+    var EXISTING_PRACTICALS = {{ practicals_json|default:"[]"|safe }};
+
+    function programOptionsHtml(selectedIds) {
+        selectedIds = selectedIds || [];
+        return PROGRAMS_OPTIONS.map(function (p) {
+            var sel = selectedIds.indexOf(p.id) !== -1 ? 'selected' : '';
+            return '<option value="' + p.id + '" ' + sel + '>' + p.title + '</option>';
+        }).join('');
+    }
+
+    function renumberProposedPrograms() {
+        $('#proposedProgramsBody > tr').each(function (i) {
+            $(this).find('.pp-serial').text(i + 1);
+        });
+    }
+
+    function addProposedProgramRow(data) {
+        data = data || {};
+        var row = $('<tr>' +
+            '<td class="pp-serial"></td>' +
+            '<td><select class="form-select pp-programs" multiple>' + programOptionsHtml(data.program_ids) + '</select></td>' +
+            '<td><input type="number" min="0" class="form-control pp-pos" value="' + (data.pos != null ? data.pos : '') + '"></td>' +
+            '<td><input type="number" min="0" class="form-control pp-psos" value="' + (data.psos != null ? data.psos : '') + '"></td>' +
+            '<td><button type="button" class="btn btn-outline-danger btn-sm remove-pp-row"><i class="bx bx-trash"></i></button></td>' +
+            '</tr>');
+        $('#proposedProgramsBody').append(row);
+        row.find('.pp-programs').select2({ placeholder: 'Select programme(s)', width: '100%' });
+        renumberProposedPrograms();
+    }
+
+    $(document).on('click', '.remove-pp-row', function () {
+        $(this).closest('tr').remove();
+        renumberProposedPrograms();
+    });
+
+    $('#addProposedProgramBtn').on('click', function () { addProposedProgramRow(); });
+
+    function renumberUnits() {
+        $('#unitsContainer > .unit-block').each(function (unitIndex) {
+            $(this).find('.unit-badge').text('Unit-' + (unitIndex + 1));
+            $(this).find('.subunit-row').each(function (subIndex) {
+                $(this).find('.subunit-no').text((unitIndex + 1) + '.' + (subIndex + 1));
+            });
+        });
+    }
+
+    function addSubUnitRow(unitBlock, data) {
+        data = data || {};
+        var row = $('<tr class="subunit-row">' +
+            '<td class="subunit-no"></td>' +
+            '<td><input type="text" class="form-control subunit-title" placeholder="Sub title" value="' + (data.title || '') + '"></td>' +
+            '<td style="width:16%;"><input type="number" min="0" class="form-control subunit-duration" placeholder="Duration" value="' + (data.duration != null ? data.duration : '') + '"></td>' +
+            '<td style="width:6%;"><button type="button" class="btn btn-outline-danger btn-sm remove-subunit-row"><i class="bx bx-trash"></i></button></td>' +
+            '</tr>');
+        unitBlock.find('.subunit-body').append(row);
+        renumberUnits();
+    }
+
+    function addUnitBlock(data) {
+        data = data || {};
+        var block = $('<div class="unit-block">' +
+            '<div class="unit-header">' +
+                '<span class="unit-badge">Unit</span>' +
+                '<input type="text" class="form-control unit-title" placeholder="Unit title" value="' + (data.title || '') + '">' +
+                '<input type="number" min="0" class="form-control unit-hours" style="max-width:120px;" placeholder="Hours" value="' + (data.hours != null ? data.hours : '') + '">' +
+                '<button type="button" class="btn btn-outline-danger btn-sm remove-unit-block"><i class="bx bx-trash"></i></button>' +
+            '</div>' +
+            '<table class="subunit-table">' +
+                '<thead><tr><th style="width:10%;">Sub unit</th><th>Sub title</th><th style="width:16%;">Duration</th><th style="width:6%;"></th></tr></thead>' +
+                '<tbody class="subunit-body"></tbody>' +
+            '</table>' +
+            '<div class="text-end mt-2">' +
+                '<button type="button" class="btn btn_gitam_outline rounded-pill btn-sm add-subunit-btn">+ Add Sub Unit</button>' +
+            '</div>' +
+        '</div>');
+        $('#unitsContainer').append(block);
+        (data.subunits || [{}]).forEach(function (sub) { addSubUnitRow(block, sub); });
+        renumberUnits();
+    }
+
+    $(document).on('click', '.remove-subunit-row', function () {
+        $(this).closest('tr').remove();
+        renumberUnits();
+    });
+
+    $(document).on('click', '.remove-unit-block', function () {
+        $(this).closest('.unit-block').remove();
+        renumberUnits();
+    });
+
+    $(document).on('click', '.add-subunit-btn', function () {
+        addSubUnitRow($(this).closest('.unit-block'));
+    });
+
+    $('#addUnitBtn').on('click', function () { addUnitBlock(); });
+
+    function renumberPracticals() {
+        $('#practicalsBody > tr').each(function (i) {
+            $(this).find('.practical-no').text(i + 1);
+        });
+    }
+
+    function addPracticalRow(data) {
+        data = data || {};
+        var row = $('<tr>' +
+            '<td class="practical-no"></td>' +
+            '<td><input type="text" class="form-control practical-topic" placeholder="Topic" value="' + (data.topic || '') + '"></td>' +
+            '<td><button type="button" class="btn btn-outline-danger btn-sm remove-practical-row"><i class="bx bx-trash"></i></button></td>' +
+            '</tr>');
+        $('#practicalsBody').append(row);
+        renumberPracticals();
+    }
+
+    $(document).on('click', '.remove-practical-row', function () {
+        $(this).closest('tr').remove();
+        renumberPracticals();
+    });
+
+    $('#addPracticalBtn').on('click', function () { addPracticalRow(); });
+
+    window.submitSyllabusStep = function () {
+        document.getElementById('step').value = '2';
+
+        var proposedPrograms = [];
+        $('#proposedProgramsBody > tr').each(function () {
+            proposedPrograms.push({
+                program_ids: ($(this).find('.pp-programs').val() || []).map(Number),
+                program_codes: [],
+                pos: $(this).find('.pp-pos').val() || null,
+                psos: $(this).find('.pp-psos').val() || null,
+            });
+        });
+        document.getElementById('proposed_programs_json').value = JSON.stringify(proposedPrograms);
+
+        var units = [];
+        $('#unitsContainer > .unit-block').each(function () {
+            var subunits = [];
+            $(this).find('.subunit-row').each(function () {
+                subunits.push({
+                    title: $(this).find('.subunit-title').val(),
+                    duration: $(this).find('.subunit-duration').val() || null,
+                });
+            });
+            units.push({
+                title: $(this).find('.unit-title').val(),
+                hours: $(this).find('.unit-hours').val() || null,
+                subunits: subunits,
+            });
+        });
+        document.getElementById('units_json').value = JSON.stringify(units);
+
+        var practicals = [];
+        $('#practicalsBody > tr').each(function () {
+            practicals.push({ topic: $(this).find('.practical-topic').val() });
+        });
+        document.getElementById('practicals_json').value = JSON.stringify(practicals);
+
+        return true;
+    };
+
+    if (EXISTING_PROPOSED_PROGRAMS.length) {
+        EXISTING_PROPOSED_PROGRAMS.forEach(function (pp) { addProposedProgramRow(pp); });
+    } else {
+        addProposedProgramRow();
+    }
+
+    if (EXISTING_UNITS.length) {
+        EXISTING_UNITS.forEach(function (u) { addUnitBlock(u); });
+    } else {
+        addUnitBlock();
+    }
+
+    if (EXISTING_PRACTICALS.length) {
+        EXISTING_PRACTICALS.forEach(function (p) { addPracticalRow(p); });
+    } else {
+        addPracticalRow();
+    }
+})();
+</script>

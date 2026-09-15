@@ -1,0 +1,897 @@
+{%load static%}
+<style>
+    .credit-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 8px;
+        font-size: 12.5px;
+    }
+    .credit-table th, .credit-table td {
+        padding: 6px 8px;
+        text-align: left;
+        border: 1px solid #e7ded9;
+    }
+    .credit-table th {
+        background: rgb(251, 246, 236);
+        font-weight: 600;
+    }
+    .program-heading {
+        margin-top: 14px;
+        margin-bottom: 4px;
+        color: #444;
+        font-size: 13px;
+        font-weight: 600;
+    }
+    .syllabus-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12.5px;
+    }
+    .syllabus-table th, .syllabus-table td {
+        border: 1px solid #e7ded9;
+        padding: 4px 6px;
+    }
+    .syllabus-table th {
+        background: rgb(251, 246, 236);
+        font-weight: 600;
+        text-align: center;
+    }
+    .syllabus-table td:first-child {
+        font-weight: 500;
+        white-space: nowrap;
+    }
+    .syllabus-table .form-control {
+        padding: 2px 6px;
+        font-size: 12.5px;
+        height: 28px;
+        text-align: center;
+    }
+    .sdg-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 16px;
+        border: 1px solid #e7ded9;
+        border-radius: 10px;
+        padding: 14px;
+    }
+    .sdg-grid .form-check {
+        margin: 0;
+    }
+    .co-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .co-row .form-control {
+        flex: 1;
+    }
+    .form-section .row.g-2 {
+        margin-top: 0;
+    }
+    /* Deliberately NOT reusing jquery-validate's errorClass ("text-danger small mt-1") here:
+       jquery-validate sweeps up and clears/hides any element matching that exact class
+       combination on every $(form).valid() call, even ones it didn't create itself. */
+    .field-required-error {
+        color: #dc3545;
+        font-size: 0.875em;
+        margin-top: 4px;
+    }
+</style>
+<link rel="stylesheet" href="https://cdn.gitam.edu/vendor/select2/select2.min.css" />
+
+<div class="fieldset-content">
+    <div class="text-end mb-3">
+        <button type="button" id="creditGuide" class="btn btn_gitam_outline rounded-pill btn-sm d-inline-flex align-items-center gap-1" style="white-space:nowrap;">
+            <i class="bx bx-info-circle"></i><span>Credit Hours Information</span>
+        </button>
+    </div>
+
+    <input type="hidden" name="proposed_programs" value="{{ proposed_programs }}">
+    <input type="hidden" name="course_id" value="{{ course_details.id }}">
+    <input type="hidden" name="course_theory_id" value="{{ course_theory.0.id }}">
+    <input type="hidden" name="course_type_id" value="{{ course_details.course_type_id }}">
+    <input type="hidden" id="step" value="" name="step">
+
+    <div class="form-section">
+    <div class="form-section-title"><i class="bx bx-id-card"></i>Course Identity</div>
+    <div class="row g-2">
+        <div class="col-md-5">
+            <label class="form-label">Course Title</label>
+            <input type="text" autocomplete="off" name="course_title" id="course-title" value="{% if course_details.course_name %}{{ course_details.course_name }}{% endif %}" class="form-control" placeholder="Course Title">
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Type of course</label>
+            <select class="form-select" id="type_of_course" name="type_of_course">
+                <option value="" disabled hidden selected>Select</option>
+                {% for c in course_type %}
+                <option value="{{ c.id }}" {% if course_details.course_type_id == c.id %}selected{% endif %}>{{ c.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Course Code</label>
+            <select class="form-select" name="course_code_exists" required id="course_code_exists">
+                <option disabled hidden selected>Select</option>
+                <option value="1" {% if course_details.course_code_exists == 1 %}selected{% endif %}>Available</option>
+                <option value="0" {% if course_details.course_code_exists == 0 %}selected{% endif %}>Not yet allocated</option>
+            </select>
+        </div>
+        <div class="col-md-2" id="course_code_div" {% if course_details.course_code_exists == 1 %}style="display:block"{% else %}style="display:none"{% endif %}>
+            <label class="form-label">If Yes (course code)</label>
+            <input type="text" autocomplete="off" name="course_code" id="course_code" value="{% if course_details.course_code %}{{ course_details.course_code }}{% endif %}" class="form-control course_outcome_custom" placeholder="Enter Course Code">
+        </div>
+    </div>
+    </div>
+
+    <div class="form-section">
+    <div class="form-section-title"><i class="bx bx-buildings"></i>Programme &amp; Ownership</div>
+    <div class="row g-2">
+        <div class="col-md-3">
+            <label class="form-label">Programme Level</label>
+            <select class="form-select" name="program_type" id="program_type">
+                <option value="" selected disabled hidden>Select</option>
+                {% for c in program_type %}
+                <option value="{{ c.id }}" {% if c.id == course_details.program_type_id %}selected{% endif %}>{{ c.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Department/Institute (course owner)</label>
+            <select class="form-select" id="department_institue" name="dept_inst">
+                <option selected disabled hidden>Select</option>
+                {% for d in dept %}
+                <option value="{{ d.id }}" data-value="{{ d.name }}" {% if d.id == course_details.dept_code_id or d.id == course_owner.to_user__dept_code_id %}selected{% endif %}>{{ d.dept_code }} - {{ d.dept_inst }}</option>
+                {% endfor %}
+            </select>
+            <div class="text-danger small mt-1" id="department_institue_error" style="display:none;"></div>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Pass / Fail course</label>
+            <select class="form-select" id="pass_fail" name="pass_fail">
+                <option selected disabled hidden>Select</option>
+                <option value="1" {% if course_details.pass_fail is True %}selected{% endif %}>Yes</option>
+                <option value="0" {% if course_details.pass_fail is False %}selected{% endif %}>No</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Mode of Delivery</label>
+            <select name="faculty" id="classroom_delivery" multiple class="form-select">
+                <option value="1" {% if "1" in mode_of_delivery %}selected{% endif %}>Classroom Delivery</option>
+                <option value="0" {% if "0" in mode_of_delivery %}selected{% endif %}>MOOC</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Category (Primary Programme)</label>
+            <select id="course_category_id" name="course_category_id" class="form-select">
+                <option selected value="">Select</option>
+                {% for i in course_category %}
+                <option value="{{ i.id }}" {% if course_details.course_category_id == i.id %}selected{% endif %}>{{ i.category }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    </div>
+
+    <div class="form-section">
+    <div class="form-section-title"><i class="bx bx-time-five"></i>Credit Hours</div>
+    <table class="syllabus-table">
+        <tr>
+            <th style="width:12%;"></th>
+            <th>Lecture (L)</th>
+            <th>Tutorial (T)</th>
+            <th>Practical (P)</th>
+            <th>Seminar (S)</th>
+            <th>Project (J)</th>
+            <th>Credits (C)</th>
+            <th>Total Contact Hours</th>
+        </tr>
+        <tr>
+            <td>Hours per Week</td>
+            <td><input disabled autocomplete="off" onkeypress="return /[0-9]/i.test(event.key)" type="text" name="L" id="L" value="{% if course_details.L %}{{ course_details.L }}{% endif %}" class="form-control credit_value"></td>
+            <td><input disabled autocomplete="off" onkeypress="return /[0-9]/i.test(event.key)" type="text" name="T" id="T" value="{% if course_details.T %}{{ course_details.T }}{% endif %}" class="form-control credit_value"></td>
+            <td><input disabled autocomplete="off" onkeypress="return /[0-9]/i.test(event.key)" type="text" name="P" id="P" value="{% if course_details.P %}{{ course_details.P }}{% endif %}" class="form-control credit_value"></td>
+            <td><input disabled autocomplete="off" onkeypress="return /[0-9]/i.test(event.key)" type="text" name="S" id="S" value="{% if course_details.S %}{{ course_details.S }}{% endif %}" class="form-control credit_value"></td>
+            <td><input disabled autocomplete="off" onkeypress="return /[0-9]/i.test(event.key)" type="text" name="J" id="J" value="{% if course_details.J %}{{ course_details.J }}{% endif %}" class="form-control credit_value"></td>
+            <td rowspan="2"><input type="text" readonly style="background:rgb(251, 246, 236)" name="C" id="C" value="{% if course_details.C %}{{ course_details.C }}{% endif %}" class="form-control credit_value"></td>
+            <td rowspan="2"><input readonly type="text" name="total_hours" id="total_hours" value="{% if course_details.total_no_of_contact_hours %}{{ course_details.total_no_of_contact_hours }}{% endif %}" class="form-control" placeholder="C X 15 Weeks"></td>
+        </tr>
+        <tr>
+            <td>Hours per Semester</td>
+            <td><input readonly name="l_hours" id="l_hours" type="text" value="{% if course_details.L_hours %}{{ course_details.L_hours }}{% endif %}" class="form-control syllabus_hours"></td>
+            <td><input readonly name="t_hours" id="t_hours" type="text" value="{% if course_details.T_hours %}{{ course_details.T_hours }}{% endif %}" class="form-control syllabus_hours"></td>
+            <td><input readonly name="p_hours" id="p_hours" type="text" value="{% if course_details.P_hours %}{{ course_details.P_hours }}{% endif %}" class="form-control syllabus_hours"></td>
+            <td><input readonly name="s_hours" id="s_hours" type="text" value="{% if course_details.S_hours %}{{ course_details.S_hours }}{% endif %}" class="form-control syllabus_hours"></td>
+            <td><input readonly name="j_hours" id="j_hours" type="text" value="{% if course_details.J_hours %}{{ course_details.J_hours }}{% endif %}" class="form-control syllabus_hours"></td>
+        </tr>
+    </table>
+    <div class="error text-danger small mt-1"></div>
+    </div>
+
+    <div class="form-section">
+    <div class="form-section-title"><i class="bx bx-book-content"></i>Description &amp; Level</div>
+    <div class="row g-2">
+        <div class="col-12">
+            <label class="form-label">Course description <i style="color:red">(max 300 words)</i></label>
+            <textarea min-words="0" autocomplete="off" style="min-height: calc(1.5em + 2.75rem + 2px);" max-words="300" rows="3" name="course_description" id="course_description" class="form-control" placeholder="Course Description">{% if course_details.course_descrption %}{{ course_details.course_descrption }}{% endif %}</textarea>
+        </div>
+    </div>
+
+    <div class="row g-2 mt-1">
+        <div class="col-md-6">
+            <label class="form-label">Level of course</label>
+            <select class="form-select" name="level_of_course" id="level_of_course">
+                <option value="" selected disabled hidden>Select</option>
+                {% for i in course_levels %}
+                <option value="{{ i.id }}" {% if course_details.level_of_course_id == i.id %}selected{% endif %}>{{ i.level }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Preferable exposure</label>
+            <input type="text" name="alt_exposure" autocomplete="off" value="{% if course_details.alternative_exposure %}{{ course_details.alternative_exposure }}{% endif %}" id="alt_exposure" class="form-control" placeholder="Preferable exposure">
+        </div>
+    </div>
+    </div>
+
+    <div class="form-section">
+    <div class="form-section-title"><i class="bx bx-link"></i>Requisites</div>
+    <div class="row g-2">
+        <div class="col-md-4">
+            <label class="form-label">Pre-requisites</label>
+            <select class="form-select" id="pre_requisites" name="pre_requisites">
+                <option selected disabled>Select Pre-requisites</option>
+                <option value="1" {% if course_details.pre_requisites == 1 %}selected{% endif %}>Yes</option>
+                <option value="0" {% if course_details.pre_requisites == 0 %}selected{% endif %}>No</option>
+            </select>
+            <div id="pre_requisites_yes_show" class="mt-2" {% if course_details.pre_requisites is not True %}style="display:none"{% endif %}>
+                <label class="form-label">If Yes (multiple course codes, comma separated)</label>
+                <input type="text" class="form-control" {% if course_details.pre_requisites_codes %}value="{{ course_details.pre_requisites_codes }}"{% endif %} name="pre_requisites_codes" id="pre_requisites_codes">
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Co-requisites</label>
+            <select class="form-select" id="co_requisites" name="co_requisites">
+                <option selected disabled>Select Co-requisites</option>
+                <option value="1" {% if course_details.co_requisites is True %}selected{% endif %}>Yes</option>
+                <option value="0" {% if course_details.co_requisites is False %}selected{% endif %}>No</option>
+            </select>
+            <div id="co_requisites_yes_show" class="mt-2" {% if course_details.co_requisites is not True %}style="display:none"{% endif %}>
+                <label class="form-label">If Yes (multiple course codes, comma separated)</label>
+                <input type="text" class="form-control" {% if course_details.co_requisites_codes %}value="{{ course_details.co_requisites_codes }}"{% endif %} name="co_requisites_codes" id="co_requisites_codes">
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Anti requisite</label>
+            <select class="form-select" id="anti_requisites" name="anti_requisites" required>
+                <option selected disabled>Select Anti requisite</option>
+                <option value="1" {% if course_details.anti_requisites is True %}selected{% endif %}>Yes</option>
+                <option value="0" {% if course_details.anti_requisites is False %}selected{% endif %}>No</option>
+            </select>
+            <div id="anti_requisites_div" class="mt-2" {% if course_details.anti_requisites is not True %}style="display:none"{% endif %}>
+                <label class="form-label">If Yes (multiple course codes, comma separated)</label>
+                <input type="text" required class="form-control" {% if course_details.anti_requisites_codes %}value="{{ course_details.anti_requisites_codes }}"{% endif %} name="anti_requisites_codes" id="anti_requisites_codes">
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <div class="form-section">
+    <div class="form-section-title"><i class="bx bx-target-lock"></i>Course Objectives &amp; Outcomes</div>
+    <div class="row g-2">
+        <div class="col-md-6">
+            <div id="course-obj-list">
+                {% if course_details.course_objectives %}
+                {% for c in course_details.course_objectives %}
+                <div class="mb-3">
+                    <label class="form-label">Course Educational Objectives - {{ forloop.counter }}</label>
+                    <input type="text" name="course_objectives" autocomplete="off" value="{{ c }}" id="course_objectives{{ forloop.counter }}" class="form-control" placeholder="Course Objectives">
+                </div>
+                {% endfor %}
+                {% else %}
+                {% for i in new_objectives %}
+                <div class="mb-3">
+                    <label class="form-label">Course Educational Objectives - {{ i }}</label>
+                    <input type="text" name="course_objectives" autocomplete="off" id="course_objectives{{ i }}" class="form-control" placeholder="Course Objectives">
+                </div>
+                {% endfor %}
+                {% endif %}
+            </div>
+            <div id="course-obj-div"></div>
+            <div class="text-end">
+                <button class="btn btn_gitam_outline rounded-pill btn-sm d-inline-flex align-items-center" id="addCourseBtn" onclick="addCourseObjectives(this)" type="button">+ Add More</button>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div id="course-outcome-list">
+                {% if course_details.course_outcome %}
+                {% for c in course_details.course_outcome %}
+                <div class="mb-3">
+                    <label class="form-label">Course Outcome(s) - {{ forloop.counter }}</label>
+                    <input type="text" name="course_outcome" autocomplete="off" value="{{ c }}" id="course_outcome_{{ forloop.counter }}" class="form-control" placeholder="Course Outcome">
+                </div>
+                {% endfor %}
+                {% else %}
+                {% for i in new_outcomes %}
+                <div class="mb-3">
+                    <label class="form-label">Course Outcome(s) - {{ i }}</label>
+                    <input type="text" name="course_outcome" autocomplete="off" id="course_outcome{{ i }}" class="form-control" placeholder="Course Outcome">
+                </div>
+                {% endfor %}
+                {% endif %}
+            </div>
+            <div id="courseOutcomeDiv"></div>
+            <div class="text-end">
+                <button class="btn btn_gitam_outline rounded-pill btn-sm d-inline-flex align-items-center" id="addCourseOutcomeBtn" onclick="addCourseOutcomes(this)" type="button">+ Add More</button>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <div class="form-section">
+    <div class="form-section-title"><i class="bx bx-globe"></i>Sustainable Development Goals</div>
+    <div class="row g-2">
+        <div class="col-md-6">
+            <label class="form-label d-block">SDG (Sustainable Development Goal)</label>
+            <div class="sdg-grid">
+                {% for p in sdg %}
+                <div class="form-check">
+                    <input type="checkbox" {% if p in selected_sdg %}checked{% endif %} class="form-check-input sgd_selectall" id="sdg{{ forloop.counter }}" name="sdg" value="{{ p }}">
+                    <label class="form-check-label" for="sdg{{ forloop.counter }}">{{ p }}</label>
+                </div>
+                {% endfor %}
+                <div class="form-check">
+                    <input type="checkbox" {% if selected_sdg|length == 17 %}checked{% endif %} class="form-check-input" onclick="sdg_selectall(this);" id="sgd_selectall">
+                    <label class="form-check-label" for="sgd_selectall">Select All</label>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">SDG Justification</label>
+            <textarea rows="6" name="sdg_description" style="min-height: calc(1.5em + 7.75rem + 2px);" id="sdg_description" placeholder="State how the selected SDG are achieved through this course content" class="form-control description">{% if course_details.sdg_description %}{{ course_details.sdg_description }}{% endif %}</textarea>
+        </div>
+    </div>
+    </div>
+
+    <div class="text-end mt-4">
+        <button type="button" onclick="return submitAboutTheCourseStep();" class="btn btn-primary d-inline-flex align-items-center">Save &amp; Next</button>
+    </div>
+</div>
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="creditGuidePanel" aria-labelledby="creditGuidePanelLabel" style="width: 480px;">
+    <div class="offcanvas-header" style="background:#f0dfc091;">
+        <h5 class="offcanvas-title" id="creditGuidePanelLabel" style="color:#007367;">Credit Hour Calculation Guide</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <p>Each program calculates credit hours differently based on the course type. Please refer to the information below:</p>
+
+        <div class="program-heading">Postgraduate (PG) Business/Management or MBA Programmes</div>
+        <table class="credit-table">
+            <thead><tr><th>Course Type</th><th>Credit Conversion</th></tr></thead>
+            <tbody>
+                <tr><td>Theory Courses</td><td>1 credit = <strong>10 hours</strong></td></tr>
+                <tr><td>Practical / Skill / Project Courses</td><td>1 credit = <strong>20 hours</strong></td></tr>
+            </tbody>
+        </table>
+
+        <div class="program-heading">All Other Postgraduate (PG) Courses</div>
+        <table class="credit-table">
+            <thead><tr><th>Course Type</th><th>Credit Conversion</th></tr></thead>
+            <tbody>
+                <tr><td>Theory Courses</td><td>1 credit = <strong>15 hours</strong></td></tr>
+                <tr><td>Practical / Skill / Project Courses</td><td>1 credit = <strong>30 hours</strong></td></tr>
+            </tbody>
+        </table>
+
+        <div class="program-heading">All Undergraduate (UG) Courses</div>
+        <table class="credit-table">
+            <thead><tr><th>Course Type</th><th>Credit Conversion</th></tr></thead>
+            <tbody>
+                <tr><td>Theory / Practical / Skill / Project Courses</td><td>1 credit = <strong>15 hours</strong></td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://cdn.gitam.edu/vendor/select2/select2.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+<script>
+
+	// Show/hide the "Enter Course Code" field based on whether a code has already been allocated
+	$('#course_code_exists').change(function() {
+		const value = $(this).val();
+		$('#course_code_div').hide()
+		if (value == '1') {
+			$('#course_code_div').show()
+			$('#course_code').attr('maxlength', 10);
+		}
+	});
+
+	// Re-apply that show/hide on page load when editing an existing course
+	{% if course_details %}
+		$('#course_code_exists').trigger('change')
+	{% endif %}
+
+	// Show/hide the "If Yes" course-code input for Anti-requisite
+	$("#anti_requisites").on('change', function () {
+	   if (this.value == "1"){
+		   $("#anti_requisites_div").show()
+	   }
+	   else {
+		   $("#anti_requisites_div").hide()
+		   $("#anti_requisites_codes").val('');
+	   }
+   });
+
+    // On blur, ask the backend whether this course code is already taken and show an inline error if so
+    $('#course_code').change(function() {
+    	var course_code = $(this).val();
+    	var course_id = "{{course_id}}"
+    	var inputField = $(this);
+		var course_exists = $("#course_code_exists").val()
+    	if (course_code != '' && course_exists == '1') {
+    		$.ajax({
+    			type: 'POST',
+    			url: '/csmc/check_course_code',
+    			data: { 'course_code': course_code,'course_id':course_id },
+    			success: function(response) {
+    				inputField.next('.error-msg').remove();
+    				if (response.is_exists) {
+    					inputField.val('');
+    					inputField.after(`<div class="error-msg" style="color:red;margin-top:5px;">"${course_code}" is already exists.</div>`);
+    				}
+    			}
+    		});
+    	}
+    });
+
+    // Open the "Credit Hour Calculation Guide" side panel
+    $('#creditGuide').click(function(){
+    	new bootstrap.Offcanvas(document.getElementById('creditGuidePanel')).show()
+    })
+
+    // Running count of Course Educational Objectives rows currently on screen (seeds from however many already exist)
+    var course_object = "{{new_objectives|length}}"
+    {% if course_details.course_objectives%}
+    	course_object = "{{course_details.course_objectives|length}}"
+    {% endif %}
+    // "+ Add More" handler for Course Educational Objectives: appends one new labeled input + delete button
+    function addCourseObjectives(obj){
+    	course_object ++ ;
+    	if (course_object == 10) {
+    		$(obj).hide()
+    	}
+    	let data = `
+    	<div class="mb-3" id="dymanicCourseDiv${course_object}">
+    		<label class="form-label">Course Educational Objectives - ${course_object}</label>
+    		<div class="co-row">
+    			<input type="text" name="course_objectives_optional" id="course_objectives${course_object}" class="form-control" placeholder="Course Objectives">
+    			<button class="btn btn-outline-danger btn-sm d-inline-flex align-items-center justify-content-center" data-value="${course_object}" type="button" onclick="removeCourseRow(this)">
+    				<i class="bx bx-trash"></i>
+    			</button>
+    		</div>
+    	</div>`
+    	$('#course-obj-div').append(data)
+    }
+
+    // Trash-icon handler: removes one dynamically-added Objectives row and un-hides "+ Add More" if it was hidden at the 10-row cap
+    function removeCourseRow(obj){
+    	course_object --;
+    	$('#addCourseBtn').show()
+    	$('#dymanicCourseDiv'+$(obj).data('value')).remove()
+    }
+
+    // Running count of Course Outcome rows currently on screen
+    var course_outcomes = "{{new_objectives|length}}"
+    {% if course_details.course_outcome%}
+    	course_outcomes = "{{course_details.course_outcome|length}}"
+    {% endif %}
+    // "+ Add More" handler for Course Outcomes: rows past #5 are marked optional in their field name
+    function addCourseOutcomes(obj){
+    	course_outcomes ++ ;
+    	if (course_outcomes == 10) {
+    		$(obj).hide()
+    	}
+    	var co_input = `<input type="text" name="course_outcome" id="course_outcome${course_outcomes}" class="form-control" placeholder="Course Outcome">`
+    	if (course_outcomes > 5) {
+    		co_input = `<input type="text" name="course_outcome_optional" id="course_outcome${course_outcomes}" class="form-control" placeholder="Course Outcome">`
+    	}
+    	let data = `
+    	<div class="mb-3" id="dymanicCourseOutcomesDiv${course_outcomes}">
+    		<label class="form-label">Course Outcome(s) - ${course_outcomes}</label>
+    		<div class="co-row">
+    			${co_input}
+    			<button class="btn btn-outline-danger btn-sm d-inline-flex align-items-center justify-content-center" data-value="${course_outcomes}" type="button" onclick="removeCourseOutcomeRow(this)">
+    				<i class="bx bx-trash"></i>
+    			</button>
+    		</div>
+    	</div>`
+    	$('#courseOutcomeDiv').append(data)
+    }
+
+    // Trash-icon handler: removes one dynamically-added Outcome row
+    function removeCourseOutcomeRow(obj){
+    	course_outcomes --;
+    	$('#addCourseOutcomeBtn').show()
+    	$('#dymanicCourseOutcomesDiv'+$(obj).data('value')).remove()
+    }
+
+    // Restrict the read-only Credits (C) field to numeric/decimal characters only (belt-and-suspenders; it's normally set programmatically)
+    $('#C').keypress(function (e) {
+    	var regex = new RegExp("^[0-9-.]+$");
+    	var str = String.fromCharCode(!e.charCode ? e.which : e.charCode);
+    	if (regex.test(str)) {
+    		return true;
+    	}
+    	e.preventDefault();
+    	return false;
+    });
+
+    // Turn every dropdown on this step into a searchable select2 widget
+    $(document).ready(function() {
+		$('#classroom_delivery').select2({
+			placeholder : ''
+		});
+		$('#type_of_course, #course_code_exists, #program_type, #department_institue, ' +
+		  '#pass_fail, #course_category_id, #level_of_course, ' +
+		  '#pre_requisites, #co_requisites, #anti_requisites').select2({
+			width: '100%'
+		});
+
+		// Reflect the saved course type's field enable/disable state and Practical section
+		// visibility on initial load (edit mode). All L/T/P/S/J inputs are hard-coded `disabled`
+		// in the markup regardless of the saved course type, so without this an existing course
+		// (e.g. already saved as "Theory plus Practical") loads with Practical still disabled and
+		// un-typeable until the user re-fires the dropdown's change event by picking a different
+		// value and back. This only toggles `disabled`/`readonly` - it deliberately does NOT clear
+		// any field's value the way onchangeTypeCourse() does, since those are the saved values.
+		var initialCourseType = $('#type_of_course').val();
+		$("#practicalSection").toggle(initialCourseType == '2' || initialCourseType == '3');
+		if (initialCourseType) {
+			var initialPassFail = $('input[name="pass_fail"]:checked').val();
+			if (initialPassFail == 1) {
+				$("#T,#P,#J,#L,#S").prop("disabled", false);
+				$("#C").prop("readonly", true);
+			} else {
+				if (initialCourseType == 1) {
+					$("#L,#T").prop("disabled", false);
+					$("#P,#J,#S").prop("disabled", true);
+				} else if (initialCourseType == 2) {
+					$("#P").prop("disabled", false);
+					$("#L,#T,#J,#S").prop("disabled", true);
+				} else if (initialCourseType == 3) {
+					$("#L,#T,#P").prop("disabled", false);
+					$("#J,#S").prop("disabled", true);
+				} else if (initialCourseType == 4) {
+					$("#J").prop("disabled", false);
+					$("#L,#T,#P,#S").prop("disabled", true);
+				} else if (initialCourseType == 5) {
+					$("#S").prop("disabled", false);
+					$("#T,#P,#J,#L").prop("disabled", true);
+				} else if (initialCourseType == 6) {
+					$("#T,#P,#J,#L,#S").prop("disabled", false);
+				}
+				$("#C").prop("readonly", initialCourseType != 4);
+			}
+		}
+    });
+
+    // Changing the owning department requires a programme level and course type first, then recompute credits for the new department (MGMT has different hour multipliers)
+    $('#department_institue').change(function(){
+    	if (!$(this).val()) {
+    		return; // this is the re-entrant call from the .trigger('change') resets below; nothing to validate
+    	}
+    	var $deptError = $('#department_institue_error');
+    	if(!$("#program_type").val()) {
+    		$deptError.text('Please select Programme Level first.').show();
+    		$(this).val(null).trigger('change');
+    		return false
+    	}
+    	if($("#type_of_course").val() == null) {
+    		$deptError.text('Please select Course Type first.').show();
+    		$(this).val(null).trigger('change');
+    		return false
+    	}
+    	$deptError.hide().text('');
+    	onchangeTypeCourse($("#type_of_course").val())
+    	$(".credit_value").trigger('keyup')
+    })
+
+    // Core credit-hour calculator: recomputes L/T/P/S/J hours-per-semester and the total Credits (C)
+    // whenever any of the L/T/P/S/J inputs change, based on course type (1-6) and department (MGMT vs others)
+    $(document).ready(function () {
+    	$(".credit_value").keyup(function () {
+    		$('.error').html('')
+    		let courseType = $("#type_of_course").val();
+    		let courseDept = $('#department_institue').find(":selected").data("value");
+    		let L = Number($("#L").val()) || 0;
+    		let T = Number($("#T").val()) || 0;
+    		let P = Number($("#P").val()) || 0;
+    		let J = Number($("#J").val()) || 0;
+    		let S = Number($("#S").val()) || 0;
+    		let totalHours = 0;
+    		let maxLectureTutorial = 4;
+
+    		$("#total_hours").val('')
+    		$("#j_hours").val('')
+    		if (courseType != 6) {
+    			if ((this.id === 'L' || this.id === 'T') && $(this).val() > maxLectureTutorial) {
+    				$('.error').text(`${this.id} value should be less than 5`);
+    				$(this).val('');
+    				return;
+    			}
+    			if (this.id === 'S' && S > 9) {
+    				$('.error').text('S value should be less than 10');
+    				$("#S").val('');
+    				return;
+    			}
+    		}
+
+    		let tHours = courseDept === 'MGMT' ? 10 : 15;
+    		let pHours = courseDept === 'MGMT' ? 20 : 30;
+    		let hours = (courseType == 1) ? tHours : (courseType == 2 || courseType == 4 || courseType == 5) ? pHours : 0;
+
+    		if ($('#program_type').val() == '1') {
+    			tHours = 15;
+    			pHours = 30;
+    			hours = (courseType == 2 || courseType == 4 || courseType == 5) ? pHours : tHours;
+    		}
+
+    		switch (parseInt(courseType)) {
+    			case 1:
+    				if ((L + T) > maxLectureTutorial) {
+    					$('.error').text('L+T value should be less than 5');
+    					$(this).val('');
+    					return;
+    				}
+    				$('#l_hours').val(L * hours);
+    				$('#t_hours').val(T * hours);
+    				$("#C").val(L + T);
+    				break;
+    			case 2:
+    				$("#C").val(P * 0.5);
+    				$('#p_hours').val(P * 0.5 * hours);
+    				break;
+    			case 3:
+    				$('#l_hours').val(L * tHours);
+    				$('#t_hours').val(T * tHours);
+    				$('#p_hours').val(P * 0.5 * pHours);
+    				$("#C").val(L + T + (P * 0.5));
+    				break;
+    			case 4:
+    				$("#C").val(J * 0.5);
+    				$('#j_hours').val(J * 0.5 * hours)
+    				break;
+    			case 5:
+    				$("#C").val(S * 0.5);
+    				$('#s_hours').val(S * 0.5 * hours)
+    				break;
+    			case 6:
+    				$("#C").val(0);
+    				break;
+    		}
+
+    		totalHours = $("#C").val() * hours;
+    		if (courseType == 3) {
+    			totalHours = Number($('#l_hours').val()) + Number($('#t_hours').val()) + Number($('#p_hours').val());
+    		}
+    		$("#total_hours").val(totalHours);
+    		syncCreditSummary();
+    	});
+    });
+
+    // Changing course type re-applies the L/T/P/S/J enable/disable rules and recomputes credits,
+    // regardless of whether a department has been picked yet (department only affects the hours
+    // multiplier used inside the keyup calculation, defaulting to the non-MGMT rate until then).
+    $("#type_of_course").change(function () {
+    	onchangeTypeCourse($(this).val())
+    	$(".credit_value").trigger('keyup')
+    })
+
+    // Pass/Fail toggle: Pass/Fail courses always carry 0 credits with all fields editable (see onchangeTypeCourse's early return for pass_fail==1)
+    function passFailChange(src){
+        if (src.value==0){
+            onchangeTypeCourse($("#type_of_course").val())
+        }else{
+            $("#T,#P,#J,#L,#S").prop("disabled", false);
+            $("#T,#P,#J,#L,#S").prop("readonly", false);
+            $("#C").prop("readonly", true);
+            $("#C").val(0)
+        }
+    }
+
+    // Mirrors the live L/T/P/S/J/C/hours values from this step into the read-only
+    // "Credit Hours (from Step 1)" summary table on the Syllabus (step 2) tab.
+    function syncCreditSummary() {
+    	$('#summary_L').val($('#L').val() || '0');
+    	$('#summary_T').val($('#T').val() || '0');
+    	$('#summary_P').val($('#P').val() || '0');
+    	$('#summary_S').val($('#S').val() || '0');
+    	$('#summary_J').val($('#J').val() || '0');
+    	$('#summary_C').val($('#C').val() || '0');
+    	$('#summary_total_hours').val($('#total_hours').val() || '0');
+    	$('#summary_L_hours').val($('#l_hours').val() || '0');
+    	$('#summary_T_hours').val($('#t_hours').val() || '0');
+    	$('#summary_P_hours').val($('#p_hours').val() || '0');
+    	$('#summary_S_hours').val($('#s_hours').val() || '0');
+    	$('#summary_J_hours').val($('#j_hours').val() || '0');
+    }
+
+    function onchangeTypeCourse(course_type) {
+    	pass_fail=$('input[name="pass_fail"]:checked').val();
+    	// Practical section (Syllabus tab) only applies to course types that carry a Practical (P) component.
+    	$("#practicalSection").toggle(course_type == 2 || course_type == 3);
+    	if (pass_fail==1){
+    	    $("#T,#P,#J,#L,#S").prop("disabled", false);
+            $("#T,#P,#J,#L,#S").prop("readonly", false);
+    		$("#C").prop("readonly", true);
+            $("#C").val(0)
+            syncCreditSummary();
+            return false
+        }
+    	if(course_type != 4){
+    		$("#C").prop("readonly", true);
+    	}else{
+    		$("#C").prop("readonly", false);
+    	}
+        if(course_type == 1){
+			$("#P,#J,#S").val('')
+			$("#p_hours,#j_hours,#s_hours").val('')
+            $("#L,#T").prop("disabled", false);
+            $("#P,#J,#S").prop("disabled", true);
+            $("#C").val(Number($("#L").val())+Number($("#T").val()))
+        }else if(course_type ==2){
+			$("#L,#T,#J,#S").val('')
+			$("#l_hours,#t_hours,#s_hours,j_hours").val('')
+            $("#P").prop("disabled", false);
+            $("#L,#T,#J,#S").prop("disabled", true);
+            $("#C").val(Number($("#P").val())*0.5)
+        }else if(course_type ==3){
+			$("#J,#S").val('')
+            $("#L,#T,#P").prop("disabled", false);
+			$("#j_hours,#s_hours").val('')
+            $("#J,#S").prop("disabled", true);
+            l = $("#L").val();
+            t = $("#T").val();
+            p = $("#P").val();
+            sum = (Number(l) + Number(t)) + Number(p*0.5)
+            $("#C").val(sum)
+        }
+    	else if(course_type ==4){
+    		$("#L,#T,#P,#S").val('')
+			$("#l_hours,#t_hours,#p_hours,#s_hours").val('')
+    		$("#C").prop("readonly", false);
+    		$("#L,#T,#P,#S").prop("disabled", true);
+            $("#J").prop("disabled", false);
+        }
+    	else if(course_type ==5){
+			$("#T,#P,#J,#L").val('')
+    		$("#T,#P,#J,#L").prop("disabled", true);
+    		$("#J").prop("readonly", false);
+            $("#S").prop("disabled", false);
+            $("#C").val(Number($("#S").val())*0.5)
+        }
+    	else if(course_type ==6){
+            $("#T,#P,#J,#L,#S").prop("disabled", false);
+            $("#T,#P,#J,#L,#S").prop("readonly", false);
+    		$("#C").prop("readonly", true);
+            $("#C").val(0)
+        }
+    	syncCreditSummary();
+    }
+
+    $("#program_type").on('change',function(){
+        a=(this)
+        if (a.val === '') {
+            return false;
+        }
+        $.ajax({
+            method: "POST",
+            url: '/csmc/get_levels_by_ptype',
+            data: "program_type=" + $('#program_type').val(),
+            success: function (result) {
+				$("#level_of_course").html('')
+                $("#level_of_course").append('<option selected disabled >Select Level</option>');
+                for (var i = 0; i < result.length; i++) {
+				    $("#level_of_course").append('<option value="' + result[i]["id"] + '" >' + result[i]["level"] + '</option>');
+				}
+				$(".credit_value").trigger('keyup')
+            }
+        });
+    })
+
+    $("#pre_requisites").on('change', function () {
+        if (this.value == "1"){
+            $("#pre_requisites_yes_show").show()
+        }
+        else {
+            $("#pre_requisites_yes_show").hide()
+            $("#pre_requisites_codes").val('');
+        }
+    });
+    $("#co_requisites").on('change', function () {
+        if (this.value == "1"){
+            $("#co_requisites_yes_show").show()
+        }
+        else {
+            $("#co_requisites_yes_show").hide()
+            $("#co_requisites_codes").val('');
+        }
+    });
+
+    // jquery-validate's `rules` config is keyed by `name` and silently validates only the FIRST
+    // element sharing a name (see its elements() dedup) - so course_objectives/course_outcome
+    // (4 inputs each, same name, required so the server can getlist() them) can't use it directly.
+    // Check those two groups by hand instead, one message per input.
+    function validateRepeatedGroup(selector) {
+        var allValid = true;
+        $(selector).each(function () {
+            var $field = $(this);
+            // Dynamically-added ("+ Add More") fields sit inside a flex .co-row next to a delete
+            // button - insert the message after that whole row instead of between the two.
+            var $row = $field.closest('.co-row');
+            var $anchor = $row.length ? $row : $field;
+            var $err = $anchor.next('.field-required-error');
+            if (!$.trim($field.val())) {
+                allValid = false;
+                if (!$err.length) {
+                    $anchor.after('<div class="field-required-error">This field is required.</div>');
+                } else {
+                    $err.show();
+                }
+            } else {
+                $err.hide();
+            }
+        });
+        return allValid;
+    }
+
+    // Require every "About the course" field before Save & Next is allowed to submit.
+    // jquery-validate ignores :hidden fields by default, so Steps 2-4 (inactive tabs) are unaffected.
+    $('form').validate({
+        // select2 hides the real "Mode of Delivery" <select> (display:none), which jquery-validate's
+        // default ":hidden" ignore would otherwise skip; carve out an exception for it specifically.
+        ignore: ':hidden:not(.select2-hidden-accessible)',
+        errorClass: 'text-danger small mt-1',
+        errorElement: 'div',
+        errorPlacement: function (error, element) {
+            if (element.hasClass('select2-hidden-accessible')) {
+                error.insertAfter(element.next('.select2-container'));
+            } else {
+                error.insertAfter(element);
+            }
+        },
+        rules: {
+            course_title: { required: true },
+            type_of_course: { required: true },
+            course_code_exists: { required: true },
+            program_type: { required: true },
+            dept_inst: { required: true },
+            pass_fail: { required: true },
+            faculty: { required: true },
+            course_category_id: { required: true },
+            course_description: { required: true },
+            level_of_course: { required: true },
+            pre_requisites: { required: true },
+            co_requisites: { required: true },
+            anti_requisites: { required: true },
+            sdg: { required: true },
+            sdg_description: { required: true },
+        },
+    });
+
+    // The Save & Next button is a plain button (not type=submit) so both checks below always run
+    // together and show their messages at once - jquery-validate's own submitHandler only fires
+    // once ITS ruled fields already pass, which would hide the custom checks whenever some other
+    // field (e.g. Pre-requisites) was also empty.
+    window.submitAboutTheCourseStep = function () {
+        document.getElementById('step').value = '1';
+        var objectivesValid = validateRepeatedGroup('input[name="course_objectives"], input[name="course_objectives_optional"]');
+        var outcomesValid = validateRepeatedGroup('input[name="course_outcome"], input[name="course_outcome_optional"]');
+        var pluginValid = $('form').valid();
+        if (objectivesValid && outcomesValid && pluginValid) {
+            $('form')[0].submit();
+        }
+        return false;
+    };
+</script>

@@ -1,0 +1,174 @@
+{% load static %}
+<style>
+    .copo-info-box {
+        border: 1px solid #e7ded9;
+        border-radius: 8px;
+        padding: 14px;
+        height: 100%;
+    }
+    .copo-info-box ol, .copo-info-box ul {
+        margin: 0;
+        padding-left: 18px;
+    }
+    .copo-info-box li {
+        margin-bottom: 8px;
+    }
+    .copo-program-title {
+        color: #007367;
+        text-align: center;
+        font-weight: 600;
+        margin-top: 20px;
+    }
+    .copo-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12.5px;
+        margin-top: 6px;
+    }
+    .copo-table th, .copo-table td {
+        border: 1px solid #e7ded9;
+        padding: 4px 6px;
+        text-align: center;
+    }
+    .copo-table th {
+        background: rgb(251, 246, 236);
+        font-weight: 600;
+    }
+    .copo-table input {
+        width: 44px;
+        text-align: center;
+        border: 1px solid #e7ded9;
+        border-radius: 4px;
+        padding: 2px;
+    }
+</style>
+
+<div class="fieldset-content">
+    <div class="form-section">
+        <div class="row g-2">
+            <div class="col-md-6">
+                <div class="form-section-title"><i class="bx bx-target-lock"></i>Course Outcomes</div>
+                <div class="copo-info-box">
+                    <ol id="courseOutcomesList"></ol>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-section-title"><i class="bx bx-info-circle"></i>Instructions for CO-PO Mapping</div>
+                <div class="copo-info-box">
+                    <ol>
+                        <li>Levels of Correlation: 1 - Low, 2 - Medium, 3 - High</li>
+                        <li>At least 30% of cells under POs should be filled</li>
+                        <li>At least 50% of cells under PSOs should be filled</li>
+                        <li>No two programmes can have the same CO-PSO mapping</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-section">
+        <div class="form-section-title"><i class="bx bx-grid-alt"></i>CO PO PSO Mapping</div>
+        <div id="copoProgramsContainer"></div>
+    </div>
+
+    <div class="form-section">
+        <div class="form-section-title"><i class="bx bx-calendar-check"></i>Approval Details</div>
+        <div class="row g-2">
+            <div class="col-md-3">
+                <label class="form-label">Regulations</label>
+                <select class="form-select" id="regulations" name="regulations">
+                    <option value="New Regulations" {% if course_details.regulations == "New Regulations" %}selected{% endif %}>New Regulations</option>
+                    <option value="Modified Regulations" {% if course_details.regulations == "Modified Regulations" %}selected{% endif %}>Modified Regulations</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">BoS Date</label>
+                <input type="date" class="form-control" id="bos_date" name="bos_date" value="{% if course_details.bos_date %}{{ course_details.bos_date|date:'Y-m-d' }}{% endif %}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Academic Council No</label>
+                <input type="text" class="form-control" id="ac_council_number" name="ac_council_number" value="{% if course_details.ac_council_number %}{{ course_details.ac_council_number }}{% endif %}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Academic Council Date</label>
+                <input type="date" class="form-control" id="ac_council_date" name="ac_council_date" value="{% if course_details.ac_council_date %}{{ course_details.ac_council_date|date:'Y-m-d' }}{% endif %}">
+            </div>
+        </div>
+    </div>
+
+    <input type="hidden" name="copo_json" id="copo_json">
+
+    <div class="text-end mt-4">
+        <button type="button" class="btn btn-secondary prev_btn me-2" onclick="document.getElementById('step').value='4';">Previous</button>
+        <button type="submit" class="btn btn-primary" onclick="return submitCopoStep();">Final Preview</button>
+    </div>
+</div>
+
+<script>
+(function () {
+    var COURSE_OUTCOMES = {{ course_outcomes_json|default:"[]"|safe }};
+    var PROPOSED_PROGRAMS = {{ proposed_programs_display_json|default:"[]"|safe }};
+
+    COURSE_OUTCOMES.forEach(function (co) {
+        $('#courseOutcomesList').append('<li>' + co + '</li>');
+    });
+
+    function buildProgramGrid(program) {
+        var coCount = COURSE_OUTCOMES.length || 0;
+        var posCount = program.pos || 0;
+        var psosCount = program.psos || 0;
+
+        var html = '<div class="copo-program" data-program-id="' + program.id + '">';
+        html += '<div class="copo-program-title">' + program.title + '</div>';
+        html += '<table class="copo-table"><thead>';
+        html += '<tr><th rowspan="2"></th>';
+        html += '<th colspan="' + posCount + '">POs</th>';
+        html += '<th colspan="' + psosCount + '">PSOs</th></tr><tr>';
+        for (var p = 1; p <= posCount; p++) { html += '<th>' + p + '</th>'; }
+        for (var s = 1; s <= psosCount; s++) { html += '<th>' + s + '</th>'; }
+        html += '</tr></thead><tbody>';
+
+        for (var co = 1; co <= coCount; co++) {
+            var existing = (program.rows && program.rows[co]) || {};
+            var poVals = existing.po || [];
+            var psoVals = existing.pso || [];
+            html += '<tr><td>' + co + '</td>';
+            for (var pi = 0; pi < posCount; pi++) {
+                html += '<td><input type="text" maxlength="1" class="copo-po-cell" data-co="' + co + '" data-col="' + pi + '" value="' + (poVals[pi] != null ? poVals[pi] : '') + '"></td>';
+            }
+            for (var si = 0; si < psosCount; si++) {
+                html += '<td><input type="text" maxlength="1" class="copo-pso-cell" data-co="' + co + '" data-col="' + si + '" value="' + (psoVals[si] != null ? psoVals[si] : '') + '"></td>';
+            }
+            html += '</tr>';
+        }
+        html += '</tbody></table></div>';
+        return html;
+    }
+
+    PROPOSED_PROGRAMS.forEach(function (program) {
+        $('#copoProgramsContainer').append(buildProgramGrid(program));
+    });
+
+    window.submitCopoStep = function () {
+        document.getElementById('step').value = '4';
+
+        var payload = [];
+        $('.copo-program').each(function () {
+            var programId = $(this).data('program-id');
+            var rows = [];
+            var coCount = COURSE_OUTCOMES.length || 0;
+            for (var co = 1; co <= coCount; co++) {
+                var po = [];
+                $(this).find('.copo-po-cell[data-co="' + co + '"]').each(function () { po.push($(this).val() || null); });
+                var pso = [];
+                $(this).find('.copo-pso-cell[data-co="' + co + '"]').each(function () { pso.push($(this).val() || null); });
+                rows.push({ co: co, po: po, pso: pso });
+            }
+            payload.push({ proposed_program_id: programId, rows: rows });
+        });
+        document.getElementById('copo_json').value = JSON.stringify(payload);
+
+        return true;
+    };
+})();
+</script>

@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load user_tags %}
+{% block body %}
+<section class="content-container contentContainer" id="homeSection">
+    <div class="d-flex justify-content-between align-items-center pb-1 ">
+        <h3 class="page-title">Duration &amp; Exit Plan</h3>
+        <div class="d-flex gap-1">
+            <button type="button" class="btn btn-primary btn-sm d-inline-flex align-items-center" id="addMappingBtn" style="white-space:nowrap;">
+                <span>+ Add Mapping</span>
+            </button>
+        </div>
+    </div>
+    <div class="box-container">
+        <div class="table-responsive">
+            <table id="mappingsTable" class="table table-bordered nowrap" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>S.No</th>
+                        <th>Program Level</th>
+                        <th>School</th>
+                        <th>Duration (Years)</th>
+                        <th>Exit Plan</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in mappings %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ m.program_level.name|default:"—" }}</td>
+                        <td>{{ m.school.name|default:"—" }}</td>
+                        <td>{{ m.duration|default:"—" }}</td>
+                        <td>{% if m.exit_plan %}Yes{% else %}No{% endif %}</td>
+                        <td>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input toggle_status" type="checkbox" role="switch"
+                                       data-value="{{ m.enc_id }}" {% if m.status %}checked{% endif %}>
+                            </div>
+                        </td>
+                        <td>
+                            <a href="javascript:void(0);" class="edit_mapping" title="Edit"
+                               data-id="{{ m.enc_id }}" data-level="{{ m.program_level_id }}"
+                               data-school="{{ m.school_id }}" data-duration="{{ m.duration }}"
+                               data-exit-plan="{% if m.exit_plan %}1{% else %}0{% endif %}">
+                                <i class="bx bx-edit-alt" style="color:#007367;font-size:18px;"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<div class="modal fade" id="mappingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="mappingModalTitle">Add Mapping</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="mappingId">
+                <div class="mb-3">
+                    <label class="form-label">Program Level</label>
+                    <select class="form-control" id="programLevelId">
+                        <option value="">Select Program Level</option>
+                        {% for l in program_levels %}
+                        <option value="{{ l.id }}">{{ l.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">School</label>
+                    <select class="form-control" id="schoolId">
+                        <option value="">Select School</option>
+                        {% for s in schools %}
+                        <option value="{{ s.id }}">{{ s.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Duration (Years)</label>
+                    <input type="number" min="1" class="form-control" id="duration">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Exit Plan</label>
+                    <select class="form-control" id="exitPlan">
+                        <option value="0">No</option>
+                        <option value="1">Yes</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveMappingBtn">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function () {
+    $('#mappingsTable').DataTable();
+
+    $('#addMappingBtn').on('click', function () {
+        $('#mappingModalTitle').text('Add Mapping');
+        $('#mappingId').val('');
+        $('#programLevelId').val('');
+        $('#schoolId').val('');
+        $('#duration').val('');
+        $('#exitPlan').val('0');
+        $('#mappingModal').modal('show');
+    });
+
+    $(document.body).on('click', '.edit_mapping', function () {
+        $('#mappingModalTitle').text('Edit Mapping');
+        $('#mappingId').val($(this).data('id'));
+        $('#programLevelId').val($(this).data('level'));
+        $('#schoolId').val($(this).data('school'));
+        $('#duration').val($(this).data('duration'));
+        $('#exitPlan').val($(this).data('exit-plan'));
+        $('#mappingModal').modal('show');
+    });
+
+    $('#saveMappingBtn').on('click', function () {
+        if (!$('#programLevelId').val() || !$('#schoolId').val() || !$('#duration').val()) {
+            Swal.fire({ title: 'Error', text: 'Program Level, School and Duration are required.', icon: 'error' });
+            return;
+        }
+        $.ajax({
+            type: 'POST',
+            url: '/user/admin/duration_exit_plans/save',
+            data: {
+                id: $('#mappingId').val(),
+                program_level_id: $('#programLevelId').val(),
+                school_id: $('#schoolId').val(),
+                duration: $('#duration').val(),
+                exit_plan: $('#exitPlan').val()
+            },
+            success: function (response) {
+                if (response.status === 200) {
+                    $('#mappingModal').modal('hide');
+                    location.reload();
+                } else {
+                    Swal.fire({ title: 'Error', text: response.message || 'Could not save mapping.', icon: 'error' });
+                }
+            },
+            error: function () {
+                Swal.fire({ title: 'Error', text: 'Could not save mapping. Please try again.', icon: 'error' });
+            }
+        });
+    });
+
+    $(document.body).on('change', '.toggle_status', function () {
+        var checkbox = $(this);
+        $.ajax({
+            type: 'POST',
+            url: '/user/admin/duration_exit_plans/toggle_status',
+            data: { id: checkbox.data('value') },
+            success: function (response) {
+                if (response.status !== 200) {
+                    checkbox.prop('checked', !checkbox.prop('checked'));
+                    Swal.fire({ title: 'Error', text: response.message || 'Could not update status.', icon: 'error' });
+                }
+            },
+            error: function () {
+                checkbox.prop('checked', !checkbox.prop('checked'));
+                Swal.fire({ title: 'Error', text: 'Could not update status. Please try again.', icon: 'error' });
+            }
+        });
+    });
+});
+</script>
+
+{% endblock %}

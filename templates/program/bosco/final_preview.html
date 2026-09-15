@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block body %}
+<section class="content-container contentContainer" id="homeSection">
+    <div class="d-flex align-items-center justify-content-between mb-2">
+        <h5 class="text-left mb-0" style="color:#007367;">Final Preview</h5>
+        <a href="/programs/edit_program/{{ enc_program_id }}" class="btn btn_gitam_outline rounded-pill btn-sm d-inline-flex align-items-center gap-1">
+            <i class="bx bx-arrow-back"></i><span>Back to Edit</span>
+        </a>
+    </div>
+    <div class="box-container">
+        {% include 'program/forms/program_preview.html' %}
+    </div>
+
+    <div class="d-flex justify-content-center gap-2 mt-3">
+        <a href="/programs/edit_program/{{ enc_program_id }}" class="btn btn-secondary d-inline-flex align-items-center">Back to Edit</a>
+        {% if program.created_by_id == request.user.id %}
+        <button type="button" class="btn btn-primary final-submit-btn d-inline-flex align-items-center">Final Submit</button>
+        <form id="finalSubmitForm" action="/programs/initiate_program/{{ enc_program_id }}" method="POST" style="display:none;">
+            {% csrf_token %}
+        </form>
+        {% endif %}
+    </div>
+</section>
+
+<script>
+$(document).ready(function () {
+    $('.final-submit-btn').on('click', function () {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'You want to submit this request!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, submit it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $('#overlay').fadeIn();
+                $('#finalSubmitForm').submit();
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

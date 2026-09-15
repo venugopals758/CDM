@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {%load static%}
+    {%load user_tags%}
+    <title>CDM</title>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="Distribution" content="Global" />
+    <meta name="description" />
+    <meta name="keywords" content="GITAM" />
+    <meta name="theme-color" content="#007367" />
+    <meta name="author" content="GITAM" />
+    <meta name="copyright" content="GITAM" />
+    <!-- favicon -->
+    <link
+      rel="shortcut icon"
+      href="https://cdn.gitam.edu/images/favicon/favicon.ico"
+      type="image/x-icon"
+    />
+
+    <!-- Bootstrap -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.gitam.edu/vendor/bootstrap-5.2.3/css/bootstrap.min.css"
+    />
+
+    <!-- Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.gitam.edu/icon/boxicons-2.1.4/css/boxicons.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.gitam.edu/icon/remixIcon-3.1.1/remixicon.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.gitam.edu/icon/fontawesome-6.4.0/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.gitam.edu/vendor/bootstrap-icons/bootstrap-icons.css"
+    />
+
+    <!-- Jquery UI -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.gitam.edu/vendor/jquery-ui/css/jquery-ui.css"
+    />
+
+    <!-- Select2 -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.gitam.edu/vendor/select2/select2.min.css"
+    />
+
+    <!-- Custome style -->
+    <link rel="stylesheet" href="https://cdn.gitam.edu/css/root.css" />
+    <!-- Jquery -->
+    <script src="https://cdn.gitam.edu/js/jquery-3.6.0.js"></script>
+
+    <!-- Jquery UI -->
+    <script src="https://cdn.gitam.edu/vendor/jquery-ui/js/jquery-ui.js"></script>
+
+    <!-- Select2 -->
+    <script src="https://cdn.gitam.edu/vendor/select2/select2.min.js"></script>
+
+    <!-- Bootstrap js -->
+    <script src="https://cdn.gitam.edu/vendor/bootstrap-5.2.3/js/bootstrap.min.js"></script>
+    <!-- Data Tables -->
+    <link rel="stylesheet" href="https://cdn.gitam.edu/vendor/dataTables/dataTables.bootstrap5.min.css" />
+    <!-- Popper  js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.11.6/umd/popper.min.js"></script>
+
+    <script src="https://cdn.gitam.edu/js/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.5/dist/sweetalert2.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+
+      <style>
+          .sidebar .nav-links li a{
+              margin-left: 20px;
+                  margin-right: 20px;
+          }
+      .sidebar .nav-links li a.compose {
+    background: #007367;
+    padding: 10px 5px;
+    margin: 20px;
+    border-radius: 6px;
+    color: #fff !important;
+    font-size: 20px;
+}
+          .sidebar .nav-links li a.compose i{
+              color:#fff;
+          }
+        .sidebar .nav-links li i{
+              min-width: 0px;
+          }
+      #overlay{
+      position: fixed;
+      top: 0;
+      z-index: 100;
+      width: 100%;
+      height:100%;
+      display: none;
+      background: rgba(0,0,0,0.6);
+    }
+    .cv-spinner {
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px #ddd solid;
+      border-top: 4px #007367 solid;
+      border-radius: 50%;
+      animation: sp-anime 0.8s infinite linear;
+    }
+    @keyframes sp-anime {
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+    .is-hide{
+      display:none;
+    }
+   /* Dropdown Container */
+#subMenu.sub-menu-wrap {
+    position: absolute;
+    right: 20px;
+    top: 60px;
+    width: 260px;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    overflow: hidden;
+    padding: 0;
+}
+
+/* Profile Header */
+#subMenu .profile-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px 18px;
+    font-weight: 600;
+    border-bottom: 1px solid #eee;
+    background: #f9f9f9;
+}
+
+/* Role Items */
+#subMenu .role-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 18px;
+    text-decoration: none;
+    color: #333;
+    transition: all 0.3s ease;
+}
+/* Active Role */
+#subMenu .active-role {
+    background: linear-gradient(90deg, #007367, #009688);
+    color: #fff !important;
+    font-weight: 600;
+    pointer-events: none;
+}
+
+/* Logout */
+#subMenu .logout-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border-top: 1px solid #eee;
+    color: #007367;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+.btn_gitam{
+    background: #007367;
+    color: white;
+    font-weight: 600;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+.btn_gitam_outline{
+    background: transparent;
+    color: #007367;
+    border: 1.5px solid #007367;
+    font-weight: 600;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+.btn_gitam_outline:hover{
+    background: #007367;
+    color: #eee2c6;
+}
+
+.gp-bg {
+    background-color: #fff3cd !important;
+}
+.home-content .text {
+    color: #f8e1c2;
+}
+.header-user-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+    white-space: nowrap;
+}
+.header-user-info .header-user-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #f8e1c2;
+}
+.header-user-info .header-user-role {
+    font-size: 11px;
+    font-weight: 500;
+    color: #f8e1c2;
+    opacity: 0.75;
+}
+
+.table thead th {
+    background: rgb(145 145 145 / 25%);
+    border: 1px solid rgb(195 195 195);
+}
+</style>
+      <script>
+
+      </script>
+  </head>
+<div id="overlay">
+	<div class="cv-spinner">
+		<span class="spinner"></span>
+	</div>
+</div>
+  <body id="page-top">
+    <div id="wrapper">
+      <!-- sider bar -->
+      <div class="sidebar-bg "></div>
+      <div class="sidebar menuSec ">
+        <div class="logo-details">
+          <span class="logo_name">
+            <img
+              src="https://cdn.gitam.edu/images/logo/gitamlogo-ivory.png"
+              alt="gitam-logo"
+              class="logo-big"
+            />
+
+            <img
+              src="https://cdn.gitam.edu/images/logo/logo-small-ivory.png"
+              alt="gitam-logo"
+              class="logo-small"
+            />
+          </span>
+        </div>
+        <ul class="nav-links">
+            <li>
+                <a href="/dashboard">
+                <i class="bx bx-grid-alt"></i>
+                <span class="link_name">Dashboard</span>
+                </a>
+                <ul class="sub-menu blank">
+                    <li><a class="link_name" href="/dashboard">Dashboard</a></li>
+                </ul>
+            </li>
+            {% if request.user|has_groups:"BOSCO,BOSC,HOD,DOAA"  %}
+            <li>
+                <a href="/programs">
+                <i class="bx bx-collection"></i>
+                <span class="link_name">Programs</span>
+                </a>
+                <ul class="sub-menu blank">
+                    <li><a class="link_name" href="/programs">Programs</a></li>
+                </ul>
+            </li>
+            <!--li class="">
+              <div class="iocn-link">
+                <a href="#">
+                  <i class="bx bx-book-alt"></i>
+                  <span class="link_name">Programs</span>
+                </a>
+                <i class="bx bxs-chevron-down arrow"></i>
+              </div>
+              <ul class="sub-menu">
+                <li><a class="link_name" href="#">Programs</a></li>
+                <li><a href="#">Create Program</a></li>
+                <li><a href="#">Login Form</a></li>
+                <li><a href="#">Card Design</a></li>
+              </ul>
+            </li-->
+            {% endif %}
+
+            {% if request.user|has_groups:"BOSCO"  %}
+            <li>
+                <a href="/programs/course_requests">
+                <i class="bx bx-list-ul"></i>
+                <span class="link_name">Course Requests</span>
+                </a>
+                <ul class="sub-menu blank">
+                    <li><a class="link_name" href="/programs/course_requests">Course Requests</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="/courses">
+                <i class="bx bx-book-content"></i>
+                <span class="link_name">Course Management</span>
+                </a>
+                <ul class="sub-menu blank">
+                    <li><a class="link_name" href="/courses">Course Management</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="/courses/create_course">
+                <i class="bx bx-plus-circle"></i>
+                <span class="link_name">Add Course</span>
+                </a>
+                <ul class="sub-menu blank">
+                    <li><a class="link_name" href="/courses/create_course">Add Course</a></li>
+                </ul>
+            </li>
+            {% endif %}
+
+            {% if request.user|has_groups:"ADMIN"  %}
+            <li>
+                <a href="/user/admin/users">
+                <i class="bx bx-user"></i>
+                <span class="link_name">Users</span>
+                </a>
+                <ul class="sub-menu blank">
+                    <li><a class="link_name" href="/user/admin/users">Users</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="/user/admin/schools">
+                <i class="bx bx-buildings"></i>
+                <span class="link_name">Schools</span>
+                </a>
+                <ul class="sub-menu blank">
+                    <li><a class="link_name" href="/user/admin/schools">Schools</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="/user/admin/streams">
+                <i class="bx bx-git-branch"></i>
+                <span class="link_name">Streams</span>
+                </a>
+                <ul class="sub-menu blank">
+                    <li><a class="link_name" href="/user/admin/streams">Streams</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="/user/admin/departments">
+                <i class="bx bx-sitemap"></i>
+                <span class="link_name">Department</span>
+                </a>
+                <ul class="sub-menu blank">
+                    <li><a class="link_name" href="/user/admin/departments">Department</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="/user/admin/bos_cochair_mappings">
+                <i class="bx bx-user-check"></i>
+                <span class="link_name">BOS Cochair Mapping</span>
+                </a>
+                <ul class="sub-menu blank">
+                    <li><a class="link_name" href="/user/admin/bos_cochair_mappings">BOS Cochair Mapping</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="/user/admin/bos_chair_school_mappings">
+                <i class="bx bx-id-card"></i>
+                <span class="link_name">BOS Chair Mapping</span>
+                </a>
+                <ul class="sub-menu blank">
+                    <li><a class="link_name" href="/user/admin/bos_chair_school_mappings">BOS Chair Mapping</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="/user/admin/duration_exit_plans">
+                <i class="bx bx-time-five"></i>
+                <span class="link_name">Duration &amp; Exit Plan</span>
+                </a>
+                <ul class="sub-menu blank">
+                    <li><a class="link_name" href="/user/admin/duration_exit_plans">Duration &amp; Exit Plan</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="/user/admin/tracks">
+                <i class="bx bx-git-merge"></i>
+                <span class="link_name">Tracks</span>
+                </a>
+                <ul class="sub-menu blank">
+                    <li><a class="link_name" href="/user/admin/tracks">Tracks</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="/user/admin/track_school_mappings">
+                <i class="bx bx-network-chart"></i>
+                <span class="link_name">Track Mapping</span>
+                </a>
+                <ul class="sub-menu blank">
+                    <li><a class="link_name" href="/user/admin/track_school_mappings">Track Mapping</a></li>
+                </ul>
+            </li>
+            {% endif %}
+
+
+        </ul>
+      </div>
+      <!-- main content -->
+      <section class="home-section">
+        <!-- header -->
+        <header>
+          <div class="container-fluid">
+            <div class="row">
+              <div class="col-md-12">
+                <div
+                  class="home-content d-flex justify-content-between align-items-center">
+                  <div
+                    class="d-flex justify-content-between align-items-center"
+                  >
+                    <div id="menuToggle">
+                      <i class="ri-menu-line"></i>
+                    </div>
+                    <span class="text d-none d-lg-block">
+                        Curriculum Development & Management
+                    </span>
+
+
+                  </div>
+                  <div data-intro="For profile and switch role" data-step="8"
+                    class="d-flex justify-content-between gap-4 align-items-center"
+                  >
+                    {% get_group_data request.user.id as user_roles %}
+                    <img
+                      src="https://gstaff.gitam.edu/img1.aspx?empid={{request.user.username}}"
+                      alt=""
+                      class="profile"
+                      id="profile_pic" onerror="this.onerror=null; this.src='static/logo/profile.jpg';"
+                    />
+                    <div class="header-user-info">
+                        <span class="header-user-name">{{ request.user.first_name }}</span>
+                        {% if user_roles.0.is_active %}
+                        <span class="header-user-role">{{ user_roles.0.role }}</span>
+                        {% endif %}
+                    </div>
+                  </div>
+                  <div class="sub-menu-wrap" id="subMenu">
+                    <div class="sub-menu">
+                        <div class="profile-section">
+                            <i class="bx bx-user-circle"></i>
+                            <span class="userName">{{ request.user.first_name }}</span>
+                        </div>
+
+                        {% if user_roles|length > 1 %}
+                        <div class="role-section">
+                            {% for i in user_roles %}
+                                <a href="{% if not i.is_active %}/user/switch_role/{{ i.enc_group_id }}{% endif %}"
+                                   class="role-item {% if i.is_active %}active-role{% endif %}">
+                                    <i class="fa fa-user"></i>
+                                    <span>{{ i.role }}</span>
+                                </a>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <a href="/user/userlogout" class="logout-item">
+                            <i class="bx bx-log-out-circle"></i>
+                            <span>Logout</span>
+                        </a>
+
+                    </div>
+                </div>
+                  <div class="quick-menu d-none" id="quickmenu">
+                    <div class="quick-menus">
+                      <div class="moreMenuGrid">
+
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </header>
+        {% block body %}
+	 {% endblock %}
+      </section>
+    </div>
+
+
+<script src="https://cdn.gitam.edu/js/app.js"></script>
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- Data Tables -->
+<script src="https://cdn.gitam.edu/vendor/dataTables/jquery.dataTables.min.js"></script>
+<script src="https://cdn.gitam.edu/vendor/dataTables/dataTables.bootstrap5.min.js"></script>
+
+<!-- Datatable file exports -->
+<script src="https://cdn.gitam.edu/vendor/dataTables/Buttons-2.3.6/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.gitam.edu/vendor/dataTables/Buttons-2.3.6/js/buttons.bootstrap5.min.js"></script>
+<script src="https://cdn.gitam.edu/vendor/dataTables/JSZip-2.5.0/jszip.min.js"></script>
+<script src="https://cdn.gitam.edu/vendor/dataTables/pdfmake-0.1.36/pdfmake.min.js"></script>
+<script src="https://cdn.gitam.edu/vendor/dataTables/pdfmake-0.1.36/vfs_fonts.js"></script>
+<script src="https://cdn.gitam.edu/vendor/dataTables/Buttons-2.3.6/js/buttons.html5.min.js"></script>
+<script src="https://cdn.gitam.edu/vendor/dataTables/Buttons-2.3.6/js/buttons.print.min.js"></script>
+<script src="https://cdn.gitam.edu/vendor/dataTables/Buttons-2.3.6/js/buttons.colVis.min.js"></script>
+<script src="https://cdn.gitam.edu/vendor/dataTables/ColumnFilterWidgets.js"></script>
+
+<script>
+{% if messages %}
+    {% for message in messages %}
+        Swal.fire({
+            icon: '{% if "success" in message.tags %}success{% elif "error" in message.tags %}error{% elif "warning" in message.tags %}warning{% else %}info{% endif %}',
+            title: '{{ message|escapejs }}',
+
+            {% if "error" in message.tags %}
+                showConfirmButton: true,
+                confirmButtonText: 'OK',
+                timer: null
+            {% else %}
+                showConfirmButton: false,
+                timer: 2500
+            {% endif %}
+        });
+    {% endfor %}
+{% endif %}
+</script>
+
+  </body>
+</html>

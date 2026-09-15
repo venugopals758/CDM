@@ -1,0 +1,291 @@
+<form id="outcomesForm" method="POST">
+{% csrf_token %}
+<input type="hidden" name="program_id" id="outcomes_program_id" value="{{ enc_program_id }}">
+
+{% for section in outcome_sections %}
+<label class="form-label mb-2">{{ section.type_label }}</label>
+<div class="table-responsive mb-4">
+    <table class="table table-bordered table-sm align-middle mb-0 outcome-table" data-outcome-type="{{ section.type_code }}">
+        <thead class="table-light">
+            <tr>
+                <th style="width:60px;">S.No</th>
+                <th style="width:90px;">Code</th>
+                <th>Description</th>
+                <th style="width:100px;">Action</th>
+            </tr>
+        </thead>
+        <tbody id="outcomeBody_{{ section.type_code }}">
+            {% for row in section.rows %}
+            <tr class="outcome-row committed-row" data-row-id="{{ row.enc_id }}">
+                <td class="row-sno"></td>
+                <td class="row-code text-center"><input type="text" class="form-control form-control-sm text-center" value="{{ row.code|default:'' }}" readonly></td>
+                <td class="outcome-description">{{ row.description }}</td>
+                <td class="text-center">
+                    <div class="d-flex gap-1 justify-content-center">
+                        <button type="button" class="btn btn-sm btn-outline-secondary edit-outcome-row-btn" title="Edit"><i class="bx bx-edit-alt"></i></button>
+                        <button type="button" class="btn btn-sm btn-outline-danger remove-outcome-row-btn" title="Remove"><i class="bx bx-trash"></i></button>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endfor %}
+
+<hr class="my-4">
+
+    <ul class="pager wizard twitter-bs-wizard-pager-link form-footer">
+        <li class="previous">
+            <a href="javascript: void(0);" class="btn btn-secondary prev_btn" data-id="3">Previous</a>
+        </li>
+        <li>
+            <button type="button" class="btn btn-primary" id="step_3_save">Preview &amp; Submit</button>
+        </li>
+    </ul>
+</form>
+
+<script>
+$(document).ready(function () {
+
+    function initOutcomeTable(table) {
+        var outcomeType = table.data('outcome-type');
+        var body = $('#outcomeBody_' + outcomeType);
+
+        function renumberRows() {
+            // Only S.No is purely positional; the Code column reflects the persisted, server-assigned value
+            body.find('tr').each(function (i) {
+                $(this).find('.row-sno').text(i + 1);
+            });
+        }
+
+        function committedActionsHtml() {
+            return '<div class="d-flex gap-1 justify-content-center">' +
+                '<button type="button" class="btn btn-sm btn-outline-secondary edit-outcome-row-btn" title="Edit"><i class="bx bx-edit-alt"></i></button>' +
+                '<button type="button" class="btn btn-sm btn-outline-danger remove-outcome-row-btn" title="Remove"><i class="bx bx-trash"></i></button>' +
+                '</div>';
+        }
+
+        function activeRowHtml() {
+            // Preview the code this row will get once saved (authoritative value still comes back from the server on Add)
+            var previewCode = outcomeType + (body.find('tr.committed-row').length + 1);
+            return '<tr class="outcome-row active-row">' +
+                '<td class="row-sno"></td>' +
+                '<td class="row-code text-center"><input type="text" class="form-control form-control-sm text-center" value="' + previewCode + '" readonly></td>' +
+                '<td><input type="text" class="form-control form-control-sm outcome-input" placeholder="Enter description"></td>' +
+                '<td class="text-center"><button type="button" class="btn btn-sm btn-success add-outcome-btn" title="Add"><i class="bx bx-plus"></i></button></td>' +
+                '</tr>';
+        }
+
+        function ensureActiveRow() {
+            if (body.find('tr.active-row').length === 0) {
+                body.append(activeRowHtml());
+                renumberRows();
+            }
+        }
+
+        body.on('click', '.add-outcome-btn', function () {
+            var addBtn = $(this);
+            var row = addBtn.closest('tr');
+            var input = row.find('.outcome-input');
+            var description = input.val().trim();
+
+            if (!description) {
+                Swal.fire({ title: 'Missing value', text: 'Please enter a description before adding.', icon: 'warning' });
+                return;
+            }
+            if (!$('#outcomes_program_id').val()) {
+                Swal.fire({ title: 'Error', text: 'Please complete Basic Details first.', icon: 'error' });
+                return;
+            }
+
+            addBtn.prop('disabled', true);
+            $.ajax({
+                type: 'POST',
+                url: '/programs/add_program_outcome_row',
+                data: {
+                    csrfmiddlewaretoken: $('#outcomesForm input[name=csrfmiddlewaretoken]').val(),
+                    program_id: $('#outcomes_program_id').val(),
+                    outcome_type: outcomeType,
+                    description: description
+                },
+                success: function (response) {
+                    if (response.status !== 200) {
+                        addBtn.prop('disabled', false);
+                        Swal.fire({ title: 'Error', text: response.message || 'Could not save this row.', icon: 'error' });
+                        return;
+                    }
+
+                    var committedRow = '<tr class="outcome-row committed-row" data-row-id="' + response.enc_row_id + '">' +
+                        '<td class="row-sno"></td>' +
+                        '<td class="row-code text-center"><input type="text" class="form-control form-control-sm text-center" value="' + (response.code || '') + '" readonly></td>' +
+                        '<td class="outcome-description">' + $('<div>').text(description).html() + '</td>' +
+                        '<td class="text-center">' + committedActionsHtml() + '</td>' +
+                        '</tr>';
+
+                    row.replaceWith(committedRow);
+                    ensureActiveRow();
+                    renumberRows();
+                },
+                error: function () {
+                    addBtn.prop('disabled', false);
+                    Swal.fire({ title: 'Error', text: 'Could not save this row. Please try again.', icon: 'error' });
+                }
+            });
+        });
+
+        body.on('click', '.edit-outcome-row-btn', function () {
+            var row = $(this).closest('tr');
+            var descCell = row.find('.outcome-description');
+            var originalText = descCell.text();
+
+            descCell.data('original', originalText).empty().append(
+                $('<input type="text" class="form-control form-control-sm outcome-edit-input">').val(originalText)
+            );
+
+            row.find('td.text-center').last().empty().append(
+                '<div class="d-flex gap-1 justify-content-center">' +
+                '<button type="button" class="btn btn-sm btn-success save-outcome-edit-btn" title="Save"><i class="bx bx-check"></i></button>' +
+                '<button type="button" class="btn btn-sm btn-outline-secondary cancel-outcome-edit-btn" title="Cancel"><i class="bx bx-x"></i></button>' +
+                '</div>'
+            );
+        });
+
+        body.on('click', '.cancel-outcome-edit-btn', function () {
+            var row = $(this).closest('tr');
+            var descCell = row.find('.outcome-description');
+            descCell.text(descCell.data('original'));
+            row.find('td.text-center').last().empty().append(committedActionsHtml());
+        });
+
+        body.on('click', '.save-outcome-edit-btn', function () {
+            var saveBtn = $(this);
+            var row = saveBtn.closest('tr');
+            var descCell = row.find('.outcome-description');
+            var newDescription = descCell.find('.outcome-edit-input').val().trim();
+
+            if (!newDescription) {
+                Swal.fire({ title: 'Missing value', text: 'Please enter a description.', icon: 'warning' });
+                return;
+            }
+
+            saveBtn.prop('disabled', true);
+            $.ajax({
+                type: 'POST',
+                url: '/programs/update_program_outcome_row',
+                data: {
+                    csrfmiddlewaretoken: $('#outcomesForm input[name=csrfmiddlewaretoken]').val(),
+                    row_id: row.data('row-id'),
+                    description: newDescription
+                },
+                success: function (response) {
+                    if (response.status !== 200) {
+                        saveBtn.prop('disabled', false);
+                        Swal.fire({ title: 'Error', text: response.message || 'Could not save changes.', icon: 'error' });
+                        return;
+                    }
+                    descCell.text(response.description);
+                    row.find('td.text-center').last().empty().append(committedActionsHtml());
+                },
+                error: function () {
+                    saveBtn.prop('disabled', false);
+                    Swal.fire({ title: 'Error', text: 'Could not save changes. Please try again.', icon: 'error' });
+                }
+            });
+        });
+
+        body.on('click', '.remove-outcome-row-btn', function () {
+            var btn = $(this);
+            var row = btn.closest('tr');
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: 'You want to remove this row!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, remove it!'
+            }).then(function (result) {
+                if (!result.isConfirmed) {
+                    return;
+                }
+                btn.prop('disabled', true);
+                $.ajax({
+                    type: 'POST',
+                    url: '/programs/delete_program_outcome_row',
+                    data: {
+                        csrfmiddlewaretoken: $('#outcomesForm input[name=csrfmiddlewaretoken]').val(),
+                        row_id: row.data('row-id')
+                    },
+                    success: function (response) {
+                        if (response.status !== 200) {
+                            btn.prop('disabled', false);
+                            Swal.fire({ title: 'Error', text: response.message || 'Could not remove this row.', icon: 'error' });
+                            return;
+                        }
+                        row.remove();
+
+                        // Close the gap: apply the server-renumbered codes to the remaining rows of this type
+                        $.each(response.updated || [], function (i, item) {
+                            body.find('tr[data-row-id="' + item.enc_row_id + '"]').find('.row-code input').val(item.code);
+                        });
+
+                        renumberRows();
+                    },
+                    error: function () {
+                        btn.prop('disabled', false);
+                        Swal.fire({ title: 'Error', text: 'Could not remove this row. Please try again.', icon: 'error' });
+                    }
+                });
+            });
+        });
+
+        ensureActiveRow();
+        renumberRows();
+    }
+
+    $('.outcome-table').each(function () {
+        initOutcomeTable($(this));
+    });
+
+    // Save & Next: rows are already saved individually via their own Add buttons,
+    // so this only needs to advance the program's active_step
+    $('#step_3_save').on('click', function () {
+        if (!$('#outcomes_program_id').val()) {
+            Swal.fire({ title: 'Error', text: 'Please complete Basic Details first.', icon: 'error' });
+            return;
+        }
+
+        var hasAnyOutcome = $('.outcome-table tbody tr.committed-row').length > 0;
+        if (!hasAnyOutcome) {
+            Swal.fire({ title: 'Outcomes required', text: 'Add at least one PO, PSO, or PEO before continuing.', icon: 'warning' });
+            return;
+        }
+
+        $('#overlay').fadeIn();
+        $.ajax({
+            type: 'POST',
+            url: '/programs/save_program_outcomes',
+            data: {
+                csrfmiddlewaretoken: $('#outcomesForm input[name=csrfmiddlewaretoken]').val(),
+                program_id: $('#outcomes_program_id').val()
+            },
+            success: function (response) {
+                $('#overlay').fadeOut();
+                if (response.status === 200) {
+                    Swal.fire({ title: 'Saved!', icon: 'success', timer: 1000, showConfirmButton: false }).then(function () {
+                        window.location.href = response.redirect_url;
+                    });
+                } else {
+                    Swal.fire({ title: 'Error', text: response.message, icon: 'error' });
+                }
+            },
+            error: function () {
+                $('#overlay').fadeOut();
+                Swal.fire({ title: 'Error', text: 'Could not save. Please try again.', icon: 'error' });
+            }
+        });
+    });
+});
+</script>

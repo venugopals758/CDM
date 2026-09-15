@@ -1,0 +1,213 @@
+<style>
+.preview-item {
+    margin-bottom: 14px;
+}
+.preview-item .preview-label {
+    font-size: 0.78rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    margin-bottom: 2px;
+}
+.preview-item .preview-value {
+    font-size: 0.95rem;
+    color: #212529;
+    font-weight: 500;
+}
+</style>
+
+{% if program %}
+<div class="card mb-3">
+    <div class="card-header" style="background:#e5f0ef; color:#007367;"><h6 class="mb-0">Basic Details</h6></div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3 preview-item">
+                <div class="preview-label">Admitted Batch</div>
+                <div class="preview-value">{{ program.program_batch.name|default:"—" }}</div>
+            </div>
+            <div class="col-md-3 preview-item">
+                <div class="preview-label">Program Type</div>
+                <div class="preview-value">{{ program.program_type.name|default:"—" }}</div>
+            </div>
+            <div class="col-md-3 preview-item">
+                <div class="preview-label">Temporary Program Title</div>
+                <div class="preview-value">{{ program.title|default:"—" }}</div>
+            </div>
+            <div class="col-md-3 preview-item">
+                <div class="preview-label">Program Code</div>
+                <div class="preview-value">{{ program.code|default:"—" }}</div>
+            </div>
+            <div class="col-md-3 preview-item">
+                <div class="preview-label">Minimum Credits</div>
+                <div class="preview-value">{{ program.minimum_credits|default:"—" }}</div>
+            </div>
+            <div class="col-md-3 preview-item">
+                <div class="preview-label">Program Level</div>
+                <div class="preview-value">{{ program.program_level.name|default:"—" }}</div>
+            </div>
+            <div class="col-md-3 preview-item">
+                <div class="preview-label">Program Credit Level</div>
+                <div class="preview-value">{{ program.program_level_credits|default:"—" }}</div>
+            </div>
+            <div class="col-md-3 preview-item">
+                <div class="preview-label">School</div>
+                <div class="preview-value">{{ program.school.name|default:"—" }}</div>
+            </div>
+
+            <div class="col-md-3 preview-item">
+                <div class="preview-label">Duration of Program</div>
+                <div class="preview-value">{% if program.duration %}{{ program.duration }} Years{% else %}—{% endif %}</div>
+            </div>
+            <div class="col-md-3 preview-item">
+                <div class="preview-label">Exit Plan?</div>
+                <div class="preview-value">{% if program.has_exit_plan %}Yes{% else %}No{% endif %}</div>
+            </div>
+            {% if program.has_exit_plan %}
+            <div class="col-md-3 preview-item">
+                <div class="preview-label">Minimum Credits for Exit Plan</div>
+                <div class="preview-value">{{ program.exit_minimum_credits|default:"—" }}</div>
+            </div>
+            {% endif %}
+            <div class="col-md-3 preview-item">
+                <div class="preview-label">Program Structure (PDF)</div>
+                <div class="preview-value">
+                    {% if program.program_structure_pdf %}
+                    <a href="{{ program.program_structure_pdf.url }}" target="_blank"><i class="bx bx-show" style="color:#007367;"></i> View PDF</a>
+                    {% else %}—{% endif %}
+                </div>
+            </div>
+
+            <div class="col-md-3 preview-item">
+                <div class="preview-label">Program Head / HOD</div>
+                <div class="preview-value">
+                    {% if program.program_head %}
+                    {{ program.program_head.emp_id }} | {{ program.program_head.first_name }} {{ program.program_head.last_name }} | {{ program.program_head.campus }} | {{ program.program_head.school_code }} | {{ program.program_head.dept_code }} | {{ program.program_head.designation }}
+                    {% else %}—{% endif %}
+                </div>
+            </div>
+            <div class="col-md-3 preview-item">
+                <div class="preview-label">PO Stream</div>
+                <div class="preview-value">{{ program.program_stream.name|default:"—" }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% for track in tracks %}
+<div class="card mb-3">
+    <div class="card-header" style="background:#e5f0ef; color:#007367;"><h6 class="mb-0">Course Category Credit Structure &ndash; {{ track.name }}</h6></div>
+    <div class="card-body">
+        {% if track.rows %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-sm align-middle mb-0" style="table-layout:fixed;">
+                <thead class="table-light">
+                    <tr>
+                        <th class="text-center" style="width:8%;">S.No</th>
+                        <th style="width:37%;">Course Category</th>
+                        <th class="text-center" style="width:20%;">Category Code</th>
+                        <th class="text-center" style="width:17.5%;">Credits</th>
+                        <th class="text-center" style="width:17.5%;">Percentage (%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in track.rows %}
+                    <tr>
+                        <td class="text-center">{{ forloop.counter }}</td>
+                        <td>{{ row.course_category.category }}</td>
+                        <td class="text-center">{{ row.course_category.code }}</td>
+                        <td class="text-center">{{ row.no_of_credits|default_if_none:"—" }}</td>
+                        <td class="text-center">{{ row.percentage_of_credits|floatformat:2|default_if_none:"—" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr style="background-color:#e5f0ef;">
+                        <td colspan="3" class="text-end fw-bold">Total</td>
+                        <td class="text-center fw-bold">{{ track.totals.credits }}</td>
+                        <td class="text-center fw-bold">{{ track.totals.percentage|floatformat:2 }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted mb-0">No course category rows added.</p>
+        {% endif %}
+    </div>
+</div>
+{% endfor %}
+
+{% if program.has_exit_plan %}
+<div class="card mb-3">
+    <div class="card-header" style="background:#e5f0ef; color:#007367;"><h6 class="mb-0">Course Category Credit Structure &ndash; Exit Plan</h6></div>
+    <div class="card-body">
+        {% if course_structure_exit %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-sm align-middle mb-0" style="table-layout:fixed;">
+                <thead class="table-light">
+                    <tr>
+                        <th class="text-center" style="width:8%;">S.No</th>
+                        <th style="width:37%;">Course Category</th>
+                        <th class="text-center" style="width:20%;">Category Code</th>
+                        <th class="text-center" style="width:17.5%;">Credits</th>
+                        <th class="text-center" style="width:17.5%;">Percentage (%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in course_structure_exit %}
+                    <tr>
+                        <td class="text-center">{{ forloop.counter }}</td>
+                        <td>{{ row.course_category.category }}</td>
+                        <td class="text-center">{{ row.course_category.code }}</td>
+                        <td class="text-center">{{ row.no_of_credits|default_if_none:"—" }}</td>
+                        <td class="text-center">{{ row.percentage_of_credits|floatformat:2|default_if_none:"—" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr style="background-color:#e5f0ef;">
+                        <td colspan="3" class="text-end fw-bold">Total</td>
+                        <td class="text-center fw-bold">{{ course_structure_exit_totals.credits }}</td>
+                        <td class="text-center fw-bold">{{ course_structure_exit_totals.percentage|floatformat:2 }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted mb-0">No course category rows added.</p>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+{% for section in outcome_sections %}
+<div class="card mb-3">
+    <div class="card-header" style="background:#e5f0ef; color:#007367;"><h6 class="mb-0">{{ section.type_label }}</h6></div>
+    <div class="card-body">
+        {% if section.rows %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-sm align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="text-center" style="width:60px;">S.No</th>
+                        <th class="text-center" style="width:90px;">Code</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in section.rows %}
+                    <tr>
+                        <td class="text-center">{{ forloop.counter }}</td>
+                        <td class="text-center">{{ row.code|default:"—" }}</td>
+                        <td>{{ row.description }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted mb-0">No {{ section.type_code }} rows added.</p>
+        {% endif %}
+    </div>
+</div>
+{% endfor %}
+{% endif %}

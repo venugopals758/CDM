@@ -1,0 +1,127 @@
+{% load static %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.2/animate.min.css">
+<link rel="stylesheet" href="{% static 'css/timeline.css' %}" type="text/css">
+<style>
+    .timeline__event--type2 .timeline__event__date {
+        color: #fff;
+        background: #007367 !important;
+    }
+    .timeline__event--type2 .timeline__event__title {
+        color: #007367 !important;
+    }
+    .timeline__event--type2 .timeline__event__icon {
+        background: #007367 !important;
+        color: #fff;
+    }
+    .timeline__event--type2:nth-child(2n+1) .timeline__event__icon:before,
+    .timeline__event--type2:nth-child(2n+1) .timeline__event__icon:after {
+        background: #007367 !important;
+    }
+    .timeline__event--type2 .timeline__event__icon:before,
+    .timeline__event--type2 .timeline__event__icon:after {
+        background: #007367 !important;
+    }
+    .timeline__event--type3 .timeline__event__date {
+        color: #fff;
+        background: #6c757d !important;
+    }
+    .timeline__event--type3 .timeline__event__title {
+        color: #6c757d !important;
+    }
+    .timeline__event--type3 .timeline__event__icon {
+        background: #6c757d !important;
+        color: #fff;
+    }
+    .timeline__event--type3:nth-child(2n+1) .timeline__event__icon:before,
+    .timeline__event--type3:nth-child(2n+1) .timeline__event__icon:after {
+        background: #6c757d !important;
+    }
+    .timeline__event--type3 .timeline__event__icon:before,
+    .timeline__event--type3 .timeline__event__icon:after {
+        background: #6c757d !important;
+    }
+    .timeline__event__content {
+        background: #e5f0ef !important;
+    }
+    .timeline__event {
+        width: 90% !important;
+    }
+</style>
+
+<div class="timeline">
+    {% if is_pending_doaa %}
+    <div class="timeline__event animated fadeInUp delay-0.25s timeline__event--type3">
+        <div class="timeline__event__icon">
+            <img src="https://gstaff.gitam.edu/img1.aspx?empid=" class="timeline-userimg">
+        </div>
+        <div class="timeline__event__date">
+            Pending
+        </div>
+        <div class="timeline__event__content" style="width:75%">
+            <div class="timeline__event__title">
+                Pending at DoAA
+                <span class="status">Pending</span>
+            </div>
+            <div class="timeline__event__description">
+
+            </div>
+        </div>
+    </div>
+    {% elif program.pending_at %}
+    <div class="timeline__event animated fadeInUp delay-0.25s timeline__event--type3">
+        <div class="timeline__event__icon">
+            <img src="https://gstaff.gitam.edu/img1.aspx?empid={{ program.pending_at.emp_id }}" class="timeline-userimg">
+        </div>
+        <div class="timeline__event__date">
+            Pending
+        </div>
+        <div class="timeline__event__content" style="width:75%">
+            <div class="timeline__event__title">
+                {{ program.pending_at.first_name }} {{ program.pending_at.last_name }}
+                <span class="status">Pending</span>
+                <br>
+                <span class="designation">
+                    {% if pending_group_name %}{{ pending_group_name }}{% endif %}
+                    {% if program.pending_at.designation %} - {{ program.pending_at.designation }}{% endif %}
+                    {% if program.pending_at.emp_id %} - {{ program.pending_at.emp_id }}{% endif %}
+                </span>
+            </div>
+            <div class="timeline__event__description">
+
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% for i in tracking_status %}
+    <div class="timeline__event animated fadeInUp delay-0.25s timeline__event--type2">
+        <div class="timeline__event__icon">
+           <img src="https://gstaff.gitam.edu/img1.aspx?empid={{ i.emp_id }}" class="timeline-userimg">
+        </div>
+        <div class="timeline__event__date">
+            {{ i.created|date:'d-M-Y h:i A' }}
+        </div>
+        <div class="timeline__event__content" style="width:75%">
+            <div class="timeline__event__title">
+                {{ i.user__first_name|default:"—" }} {{ i.user__last_name }}
+                <span class="status">{{ i.program_status__name }}</span>
+                <br>
+                <span class="designation">
+                    {% if i.group__name %}{{ i.group__name }}{% endif %}
+                    {% if i.designation %} - {{ i.designation }}{% endif %}
+                    {% if i.campus %} - {{ i.campus }}{% endif %}
+                    {% if i.institution %} - {{ i.institution }}{% endif %}
+                    {% if i.department %} - {{ i.department }}{% endif %}
+                </span>
+            </div>
+            <div class="timeline__event__description">
+                {% if i.description %}
+                    {{ i.description|linebreaks }}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <p class="text-muted text-center mt-3">No timeline activity yet.</p>
+    {% endfor %}
+</div>

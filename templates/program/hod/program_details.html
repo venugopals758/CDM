@@ -1,0 +1,596 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block body %}
+<style>
+    .nav-wrapper {
+        padding: 1rem 0;
+        border-top-left-radius: 0.375rem;
+        border-top-right-radius: 0.375rem;
+    }
+    .nav {
+        display: flex;
+        margin-bottom: 0;
+        padding-left: 0;
+        list-style: none;
+        flex-wrap: wrap;
+    }
+    .nav-pills .nav-item:not(:last-child) {
+        padding-right: 1rem;
+    }
+    .nav-fill .nav-item {
+        text-align: center;
+        flex: 1 1 auto;
+    }
+
+    .nav-pills .nav-link {
+        font-size: .875rem;
+        font-weight: 500;
+        padding: 0.75rem 1rem;
+        transition: all .15s ease;
+        color: #007367;
+        background-color: #fff;
+        box-shadow: 0 4px 6px rgba(50, 50, 93, .11), 0 1px 3px rgba(0, 0, 0, .08);
+    }
+    .nav-pills .nav-link {
+        border-radius: 0.375rem;
+    }
+    .nav-pills .nav-link.active,
+    .nav-pills .show > .nav-link {
+        background-color: #007367 !important;
+        color: #fff !important;
+        box-shadow: 0 4px 6px rgba(0, 115, 103, .3), 0 1px 3px rgba(0, 0, 0, .08);
+    }
+</style>
+
+<section class="content-container contentContainer" id="homeSection">
+    <div class="d-flex align-items-center justify-content-between mb-2">
+        <h5 class="text-left mb-0" style="color:#007367;">Program Details</h5>
+        <a href="/programs" class="btn btn_gitam_outline rounded-pill btn-sm d-inline-flex align-items-center gap-1" id="backBtn" style="white-space:nowrap;">
+            <i class="bx bx-arrow-back"></i><span>Back</span>
+        </a>
+    </div>
+    <div class="box-container">
+        <div class="nav-wrapper">
+            <ul class="nav nav-pills nav-fill flex-column flex-md-row" id="programDetailsTabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" data-bs-toggle="tab" href="#previewTab"><i class="fa fa-file-alt mr-2"></i>Program Preview</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#timelineTab"><i class="far fa-comment-dots mr-2"></i>Timeline</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#coursesTab"><i class="fa fa-book mr-2"></i>Courses Preview</a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="tab-content mt-3">
+            <div class="tab-pane fade show active" id="previewTab" role="tabpanel">
+                {% include 'program/forms/program_preview.html' %}
+                {% if forward_access is True and not course_requests_pending %}
+                <div class="col-12 btns-group mt-3">
+                    <button class="btn btn-primary" id="forward_button">Forward / Action</button>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="tab-pane fade" id="timelineTab" role="tabpanel">
+                {% include 'program/time_line.html' %}
+            </div>
+
+            <div class="tab-pane fade" id="coursesTab" role="tabpanel">
+                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                    <h6 class="mb-0" style="color:#007367;">Course Repository</h6>
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="text" class="form-control form-control-sm" id="courseRepoSearch" placeholder="Search by code or title" style="width:220px;">
+                        <select class="form-control form-control-sm" id="courseRepoCategoryFilter" style="width:140px;">
+                            <option value="">All Categories</option>
+                            <option value="Core">Core</option>
+                            <option value="Elective">Elective</option>
+                        </select>
+                        <button type="button" class="btn btn-primary btn-sm" id="mapSelectedBtn" disabled>Map Selected</button>
+                    </div>
+                </div>
+
+                <table class="table table-bordered table-sm align-middle" id="courseRepoTable" style="width:100%;">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width:32px;"><input type="checkbox" id="courseRepoSelectAll"></th>
+                            <th>Course Code</th>
+                            <th>Course Title</th>
+                            <th>Credits</th>
+                            <th>Type</th>
+                            <th>Category</th>
+                            <th>Status</th>
+                            <th style="width:110px;">Action</th>
+                        </tr>
+                    </thead>
+                        <tbody>
+                            <tr data-category="Core">
+                                <td><input type="checkbox" class="course-repo-check"></td>
+                                <td>FIN101</td>
+                                <td>Principles of Financial Accounting</td>
+                                <td>4</td>
+                                <td>Theory</td>
+                                <td>Core</td>
+                                <td><span class="badge rounded-pill status-badge" style="background:#e5f0ef;color:#007367;">Mapped</span></td>
+                                <td><button type="button" class="btn btn-sm btn-outline-secondary map-course-btn" disabled>Mapped</button></td>
+                            </tr>
+                            <tr data-category="Core">
+                                <td><input type="checkbox" class="course-repo-check"></td>
+                                <td>FIN205</td>
+                                <td>Corporate Finance</td>
+                                <td>3</td>
+                                <td>Theory</td>
+                                <td>Core</td>
+                                <td><span class="badge rounded-pill status-badge" style="background:#e5f0ef;color:#007367;">Mapped</span></td>
+                                <td><button type="button" class="btn btn-sm btn-outline-secondary map-course-btn" disabled>Mapped</button></td>
+                            </tr>
+                            <tr data-category="Elective">
+                                <td><input type="checkbox" class="course-repo-check"></td>
+                                <td>FIN310</td>
+                                <td>Financial Risk Management Lab</td>
+                                <td>2</td>
+                                <td>Practical</td>
+                                <td>Elective</td>
+                                <td><span class="badge rounded-pill status-badge" style="background:#fff3cd;color:#856404;">Not Mapped</span></td>
+                                <td><button type="button" class="btn btn-sm btn-primary map-course-btn">Map</button></td>
+                            </tr>
+                            <tr data-category="Elective">
+                                <td><input type="checkbox" class="course-repo-check"></td>
+                                <td>FIN402</td>
+                                <td>International Business Finance</td>
+                                <td>3</td>
+                                <td>Theory + Practical</td>
+                                <td>Elective</td>
+                                <td><span class="badge rounded-pill status-badge" style="background:#fff3cd;color:#856404;">Not Mapped</span></td>
+                                <td><button type="button" class="btn btn-sm btn-primary map-course-btn">Map</button></td>
+                            </tr>
+                            <tr data-category="Elective">
+                                <td><input type="checkbox" class="course-repo-check"></td>
+                                <td>FIN415</td>
+                                <td>Behavioral Finance</td>
+                                <td>3</td>
+                                <td>Theory</td>
+                                <td>Elective</td>
+                                <td><span class="badge rounded-pill status-badge" style="background:#fff3cd;color:#856404;">Not Mapped</span></td>
+                                <td><button type="button" class="btn btn-sm btn-primary map-course-btn">Map</button></td>
+                            </tr>
+                            <tr data-category="Core">
+                                <td><input type="checkbox" class="course-repo-check"></td>
+                                <td>FIN501</td>
+                                <td>Investment Analysis & Portfolio Management</td>
+                                <td>4</td>
+                                <td>Theory + Practical</td>
+                                <td>Core</td>
+                                <td><span class="badge rounded-pill status-badge" style="background:#fff3cd;color:#856404;">Not Mapped</span></td>
+                                <td><button type="button" class="btn btn-sm btn-primary map-course-btn">Map</button></td>
+                            </tr>
+                        </tbody>
+                </table>
+
+                <hr class="my-4">
+
+                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                    <h6 class="mb-0" style="color:#007367;">Course Requests</h6>
+                    <button type="button" class="btn btn-primary btn-sm d-inline-flex align-items-center" id="raiseRequestBtn" style="white-space:nowrap;">
+                        <span>+ Raise Request</span>
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width:50px;">S.No</th>
+                                <th>Request Type</th>
+                                <th>Course Title</th>
+                                <th>Department Scope</th>
+                                <th>Department</th>
+                                <th>Status</th>
+                                <th>Created By</th>
+                                <th>Created</th>
+                                <th style="width:80px;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cr in course_requests %}
+                            <tr {% if cr.is_pending_here %}style="background-color:#fff3cd;"{% endif %}>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ cr.get_request_type_display }}</td>
+                                <td>{{ cr.course_title|default:"—" }}</td>
+                                <td>{{ cr.get_dept_scope_display }}</td>
+                                <td>{{ cr.department.name|default:"—" }}</td>
+                                <td><span class="badge rounded-pill" style="background:#e5f0ef;color:#007367;">{{ cr.request_status.name|default:"—" }}</span></td>
+                                <td>{{ cr.raised_by.emp_id }} | {{ cr.raised_by.first_name }} {{ cr.raised_by.last_name }}</td>
+                                <td>{{ cr.created|date:"d-M-Y h:i A" }}</td>
+                                <td class="text-center">
+                                    <a href="/programs/hod_course_request_details/{{ cr.enc_id }}" title="View">
+                                        <i class="bx bx-show" style="color:#007367;font-size:18px;"></i>
+                                    </a>
+                                    {% if cr.can_delete %}
+                                    <button type="button" class="btn btn-sm btn-outline-danger delete-course-request-btn" data-id="{{ cr.enc_id }}" title="Delete permanently">
+                                        <i class="bx bx-trash"></i>
+                                    </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+    
+</section>
+
+<!-- Raise Request Modal -->
+<div class="modal fade" id="raiseRequestModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header" style="background:#e5f0ef;">
+                <h5 class="modal-title" style="color:#007367;">Raise Request</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="raiseRequestForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="program_id" value="{{ enc_program_id }}">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Request Type</label>
+                            <select class="form-control" name="request_type" id="requestType">
+                                <option value="" selected disabled>Select Request Type</option>
+                                <option value="new">Float a New Course</option>
+                                <option value="modify">Modify an Existing Course</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Department Scope</label>
+                            <select class="form-control" name="dept_scope" id="requestDeptScope">
+                                <option value="" selected disabled>Select Department</option>
+                                <option value="same">Within the Department</option>
+                                <option value="other">Other Department</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 mb-3 d-none" id="courseTitleWrapper">
+                            <label class="form-label">Tentative Course Title</label>
+                            <input type="text" class="form-control" name="course_title" id="requestCourseTitle" placeholder="Tentative title of the new course">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3 d-none" id="sameDeptWrapper">
+                            <label class="form-label">Your Department</label>
+                            <input type="text" class="form-control" id="sameDeptDisplay" value="{% if hod_department %}{{ hod_department.name|upper }}{% if hod_department.code %} ({{ hod_department.code|upper }}){% endif %}{% else %}Not mapped to any department yet{% endif %}" readonly>
+                        </div>
+                        <div class="col-md-6 mb-3 d-none" id="otherDeptWrapper">
+                            <label class="form-label">Select Department</label>
+                            <select class="form-control" name="department_id" id="requestOtherDept">
+                                <option value="" selected disabled>Select Department</option>
+                                {% for d in departments %}
+                                <option value="{{ d.id }}">{{ d.name|upper }}{% if d.code %} ({{ d.code|upper }}){% endif %}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3 d-none" id="assignedToWrapper">
+                            <label class="form-label">Will Be Assigned To</label>
+                            <input type="text" class="form-control" id="assignedToDisplay" readonly>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Justification</label>
+                            <textarea class="form-control" style="height: 89px;" name="justification" id="requestJustification" rows="3" placeholder="The need for a new course & syllabus"></textarea>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" style="height: 89px;" name="description" id="requestDescription" rows="3" placeholder="Provide the tentative title, credits, theory/practical/combined, expected contents, expected outcomes, expected level of the course"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="submitRequestBtn">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Action Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Forward Confirmation</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M12.0007 10.5865L16.9504 5.63672L18.3646 7.05093L13.4149 12.0007L18.3646 16.9504L16.9504 18.3646L12.0007 13.4149L7.05093 18.3646L5.63672 16.9504L10.5865 12.0007L5.63672 7.05093L7.05093 5.63672L12.0007 10.5865Z">
+                </path>
+              </svg>
+            </button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="/programs/hod_forward_program/{{ enc_program_id }}" id="forward" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select name="status" class="form-control" id="status">
+                            <option value="" selected disabled>Select Action</option>
+                            {% for s in program_status %}
+                            <option value="{{ s.id }}">{{ s.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Comments</label>
+                        <textarea class="form-control" id="comments" name="comments" placeholder="Comments" rows="3"></textarea>
+                    </div>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-success" onclick="submitForward()">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function () {
+    $('#forward_button').click(function () {
+        $('#myModal').modal('show');
+    });
+});
+
+function submitForward() {
+    $(".error").remove();
+    var status = $("#status").val();
+    if (!status) {
+        $("#status").after('<div class="error text-danger mt-1" style="font-size:12px;">This field is required.</div>');
+        return;
+    }
+    $("#overlay").fadeIn();
+    $('#myModal').modal('hide');
+    $('#forward').submit();
+}
+</script>
+
+<script>
+$(document).ready(function () {
+    var hodDepartmentId = {{ hod_department.id|default:"null" }};
+
+    function refreshAssignedTo(departmentId) {
+        if (!departmentId) {
+            $('#assignedToWrapper').addClass('d-none');
+            $('#assignedToDisplay').val('');
+            return;
+        }
+        $.ajax({
+            type: 'GET',
+            url: '/programs/get_bosco_for_department',
+            data: { department_id: departmentId },
+            success: function (response) {
+                $('#assignedToWrapper').removeClass('d-none');
+                $('#assignedToDisplay').val(response.found ? response.name : 'No BOS Cochair mapped to this department');
+            },
+            error: function () {
+                $('#assignedToWrapper').removeClass('d-none');
+                $('#assignedToDisplay').val('Could not look up the assignee.');
+            }
+        });
+    }
+
+    $('#raiseRequestBtn').on('click', function () {
+        $('#raiseRequestForm')[0].reset();
+        $('#sameDeptWrapper, #otherDeptWrapper, #assignedToWrapper, #courseTitleWrapper').addClass('d-none');
+        $('#assignedToDisplay').val('');
+        $('#raiseRequestModal').modal('show');
+    });
+
+    $('#requestType').on('change', function () {
+        $('#courseTitleWrapper').toggleClass('d-none', this.value !== 'new');
+        if (this.value !== 'new') {
+            $('#requestCourseTitle').val('');
+        }
+    });
+
+    $('#requestDeptScope').on('change', function () {
+        $('#sameDeptWrapper').toggleClass('d-none', this.value !== 'same');
+        $('#otherDeptWrapper').toggleClass('d-none', this.value !== 'other');
+
+        if (this.value === 'same') {
+            refreshAssignedTo(hodDepartmentId);
+        } else {
+            $('#assignedToWrapper').addClass('d-none');
+            $('#assignedToDisplay').val('');
+        }
+    });
+
+    $('#requestOtherDept').on('change', function () {
+        refreshAssignedTo(this.value);
+    });
+
+    var requestValidator = $('#raiseRequestForm').validate({
+        rules: {
+            request_type: { required: true },
+            dept_scope: { required: true },
+            department_id: {
+                required: function () {
+                    return $('#requestDeptScope').val() === 'other';
+                }
+            },
+            course_title: {
+                required: function () {
+                    return $('#requestType').val() === 'new';
+                }
+            },
+            justification: { required: true },
+            description: { required: true }
+        },
+        errorPlacement: function (error, element) {
+            error.insertAfter(element);
+        }
+    });
+
+    $('#submitRequestBtn').on('click', function () {
+        if (!$('#raiseRequestForm').valid()) {
+            return;
+        }
+
+        var btn = $(this);
+        btn.prop('disabled', true);
+        $.ajax({
+            type: 'POST',
+            url: '/programs/save_course_request',
+            data: $('#raiseRequestForm').serialize(),
+            success: function (response) {
+                btn.prop('disabled', false);
+                if (response.status === 200) {
+                    $('#raiseRequestModal').modal('hide');
+                    Swal.fire({ title: 'Submitted!', text: 'Your request has been raised.', icon: 'success', timer: 1500, showConfirmButton: false })
+                        .then(function () {
+                            var url = new URL(window.location.href);
+                            url.searchParams.set('tab', 3);
+                            window.location.href = url.toString();
+                        });
+                } else {
+                    Swal.fire({ title: 'Error', text: response.message || 'Could not submit the request.', icon: 'error' });
+                }
+            },
+            error: function () {
+                btn.prop('disabled', false);
+                Swal.fire({ title: 'Error', text: 'Could not submit the request. Please try again.', icon: 'error' });
+            }
+        });
+    });
+
+    $(document.body).on('click', '.delete-course-request-btn', function (e) {
+        e.stopPropagation();
+        var btn = $(this);
+        var row = btn.closest('tr');
+        var courseRequestId = btn.data('id');
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'This will permanently delete this course request. This cannot be undone!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+        }).then(function (result) {
+            if (!result.isConfirmed) {
+                return;
+            }
+            $.ajax({
+                type: 'POST',
+                url: '/programs/delete_course_request',
+                data: { course_request_id: courseRequestId },
+                success: function (response) {
+                    if (response.status === 200) {
+                        row.remove();
+                        Swal.fire({ title: 'Deleted!', icon: 'success', timer: 1000, showConfirmButton: false });
+                    } else {
+                        Swal.fire({ title: 'Error', text: response.message || 'Could not delete this request.', icon: 'error' });
+                    }
+                },
+                error: function () {
+                    Swal.fire({ title: 'Error', text: 'Could not delete this request. Please try again.', icon: 'error' });
+                }
+            });
+        });
+    });
+
+});
+</script>
+
+<script>
+$(document).ready(function () {
+    var courseRepoTable = $('#courseRepoTable').DataTable({
+        dom: 'rtip',
+        columnDefs: [
+            { orderable: false, searchable: false, targets: [0, 7] }
+        ]
+    });
+
+    function markCourseRowMapped(row) {
+        row.find('.status-badge').removeClass().addClass('badge rounded-pill status-badge')
+            .css({ background: '#e5f0ef', color: '#007367' }).text('Mapped');
+        row.find('.map-course-btn').removeClass('btn-primary').addClass('btn-outline-secondary')
+            .prop('disabled', true).text('Mapped');
+        row.find('.course-repo-check').prop('checked', false).prop('disabled', true);
+    }
+
+    // Demo only: this is a UI mock of a course repository, nothing here persists to the server.
+    $('#courseRepoTable').on('click', '.map-course-btn', function () {
+        markCourseRowMapped($(this).closest('tr'));
+    });
+
+    $('#courseRepoSelectAll').on('change', function () {
+        var checked = this.checked;
+        $('#courseRepoTable tbody .course-repo-check:not(:disabled)').prop('checked', checked);
+        $('#mapSelectedBtn').prop('disabled', $('#courseRepoTable .course-repo-check:checked').length === 0);
+    });
+
+    $('#courseRepoTable').on('change', '.course-repo-check', function () {
+        $('#mapSelectedBtn').prop('disabled', $('#courseRepoTable .course-repo-check:checked').length === 0);
+    });
+
+    $('#mapSelectedBtn').on('click', function () {
+        $('#courseRepoTable .course-repo-check:checked').each(function () {
+            markCourseRowMapped($(this).closest('tr'));
+        });
+        $('#courseRepoSelectAll').prop('checked', false);
+        $(this).prop('disabled', true);
+        Swal.fire({ title: 'Mapped!', text: 'Selected courses have been mapped to this program.', icon: 'success', timer: 1200, showConfirmButton: false });
+    });
+
+    $('#courseRepoSearch').on('keyup', function () {
+        courseRepoTable.search(this.value).draw();
+    });
+
+    $('#courseRepoCategoryFilter').on('change', function () {
+        courseRepoTable.column(5).search(this.value).draw();
+    });
+});
+</script>
+
+<script>
+$(document).ready(function () {
+    var tabIds = ['previewTab', 'timelineTab', 'coursesTab'];
+
+    function activateTab(tabNumber) {
+        var targetId = tabIds[tabNumber - 1];
+        if (!targetId) {
+            return;
+        }
+        $('#programDetailsTabs a[data-bs-toggle="tab"]').removeClass('active');
+        $('.tab-pane').removeClass('active show');
+
+        $('#programDetailsTabs a[href="#' + targetId + '"]').addClass('active');
+        $('#' + targetId).addClass('active show');
+    }
+
+    var params = new URLSearchParams(window.location.search);
+    var currentTab = parseInt(params.get('tab'));
+    if (currentTab) {
+        activateTab(currentTab);
+    }
+
+    // Keep the URL's ?tab= in sync so a refresh reopens on the same tab, without navigating away
+    $('#programDetailsTabs a[data-bs-toggle="tab"]').on('shown.bs.tab', function () {
+        var tabNumber = tabIds.indexOf($(this).attr('href').substring(1)) + 1;
+        var url = new URL(window.location.href);
+        url.searchParams.set('tab', tabNumber);
+        history.replaceState(null, '', url);
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,184 @@
+{% load static %}
+<h6 class="mb-3" style="color:#007367;">Courses Mapped to this Program</h6>
+<div class="table-responsive">
+    <table class="table table-bordered table-sm align-middle mb-0">
+        <thead class="table-light">
+            <tr>
+                <th>Course Code</th>
+                <th>Course Title</th>
+                <th>Credits</th>
+                <th>Type</th>
+                <th>Category</th>
+                <th>Semester</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>FIN101</td>
+                <td>Principles of Financial Accounting</td>
+                <td>4</td>
+                <td>Theory</td>
+                <td>Core</td>
+                <td>I</td>
+                <td><span class="badge rounded-pill" style="background:#e5f0ef;color:#007367;">Mapped</span></td>
+            </tr>
+            <tr>
+                <td>FIN205</td>
+                <td>Corporate Finance</td>
+                <td>3</td>
+                <td>Theory</td>
+                <td>Core</td>
+                <td>III</td>
+                <td><span class="badge rounded-pill" style="background:#e5f0ef;color:#007367;">Mapped</span></td>
+            </tr>
+            <tr>
+                <td>FIN310</td>
+                <td>Financial Risk Management Lab</td>
+                <td>2</td>
+                <td>Practical</td>
+                <td>Elective</td>
+                <td>V</td>
+                <td><span class="badge rounded-pill" style="background:#e5f0ef;color:#007367;">Mapped</span></td>
+            </tr>
+            <tr>
+                <td>FIN402</td>
+                <td>International Business Finance</td>
+                <td>3</td>
+                <td>Theory + Practical</td>
+                <td>Elective</td>
+                <td>VII</td>
+                <td><span class="badge rounded-pill" style="background:#e5f0ef;color:#007367;">Mapped</span></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<hr class="my-4">
+
+<h6 class="mb-3" style="color:#007367;">Course Requests</h6>
+<div class="table-responsive">
+    <table class="table table-bordered table-sm align-middle mb-0">
+        <thead class="table-light">
+            <tr>
+                <th style="width:50px;">S.No</th>
+                <th>Request Type</th>
+                <th>Course Title</th>
+                <th>Department Scope</th>
+                <th>Department</th>
+                <th>Justification</th>
+                <th>Description</th>
+                <th>Status</th>
+                <th>Created By</th>
+                <th>Created</th>
+                <th style="width:80px;">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cr in course_requests %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ cr.get_request_type_display }}</td>
+                <td>{{ cr.course_title|default:"—" }}</td>
+                <td>{{ cr.get_dept_scope_display }}</td>
+                <td>{{ cr.department.name|default:"—" }}</td>
+                <td>{{ cr.justification }}</td>
+                <td>{{ cr.description }}</td>
+                <td><span class="badge rounded-pill" style="background:#e5f0ef;color:#007367;">{{ cr.request_status.name|default:"—" }}</span></td>
+                <td>{{ cr.raised_by.emp_id }} | {{ cr.raised_by.first_name }} {{ cr.raised_by.last_name }}</td>
+                <td>{{ cr.created|date:"d-M-Y h:i A" }}</td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-sm btn-outline-primary view-timeline-btn" data-target="#crTimelineContent{{ cr.id }}" title="View Timeline">
+                        <i class="bx bx-time"></i>
+                    </button>
+                    {% if cr.can_delete %}
+                    <button type="button" class="btn btn-sm btn-outline-danger delete-course-request-btn" data-id="{{ cr.enc_id }}" title="Delete permanently">
+                        <i class="bx bx-trash"></i>
+                    </button>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="11" class="text-center text-muted">No course requests raised yet.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="d-none">
+    {% for cr in course_requests %}
+    <div id="crTimelineContent{{ cr.id }}">
+        <ul class="list-unstyled mb-0">
+            {% for t in cr.timeline %}
+            <li class="mb-2">
+                <strong>{{ t.request_status.name }}</strong>
+                by {{ t.user.first_name }} {{ t.user.last_name }}
+                &ndash; {{ t.created|date:"d-M-Y h:i A" }}
+                {% if t.description %}<br><span class="text-muted">{{ t.description }}</span>{% endif %}
+            </li>
+            {% empty %}
+            <li class="text-muted">No timeline activity yet.</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Course Request Timeline Panel -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="courseRequestTimelinePanel" style="width:700px;">
+    <div class="offcanvas-header" style="background:#e5f0ef;">
+        <h5 class="offcanvas-title" style="color:#007367;">Request Timeline</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body" id="courseRequestTimelinePanelBody"></div>
+</div>
+
+<script>
+$(document).ready(function () {
+    $(document.body).on('click', '.view-timeline-btn', function () {
+        var content = $($(this).data('target')).html();
+        $('#courseRequestTimelinePanelBody').html(content);
+        var panel = new bootstrap.Offcanvas(document.getElementById('courseRequestTimelinePanel'));
+        panel.show();
+    });
+
+    $(document.body).on('click', '.delete-course-request-btn', function (e) {
+        e.stopPropagation();
+        var btn = $(this);
+        var row = btn.closest('tr');
+        var courseRequestId = btn.data('id');
+
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'This will permanently delete this course request. This cannot be undone!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+        }).then(function (result) {
+            if (!result.isConfirmed) {
+                return;
+            }
+            $.ajax({
+                type: 'POST',
+                url: '/programs/delete_course_request',
+                data: { course_request_id: courseRequestId },
+                success: function (response) {
+                    if (response.status === 200) {
+                        row.remove();
+                        Swal.fire({ title: 'Deleted!', icon: 'success', timer: 1000, showConfirmButton: false });
+                    } else {
+                        Swal.fire({ title: 'Error', text: response.message || 'Could not delete this request.', icon: 'error' });
+                    }
+                },
+                error: function () {
+                    Swal.fire({ title: 'Error', text: 'Could not delete this request. Please try again.', icon: 'error' });
+                }
+            });
+        });
+    });
+});
+</script>

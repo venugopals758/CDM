@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load user_tags %}
+{% block body %}
+<section class="content-container contentContainer" id="homeSection">
+    <div class="d-flex justify-content-between align-items-center pb-1 ">
+        <h3 class="page-title">Courses</h3>
+        <div class="d-flex gap-1">
+            <a href="/courses/create_course" class="btn btn_gitam_outline rounded-pill d-inline-flex align-items-center gap-1" id="saveDraftBtn" style="white-space:nowrap;">
+                <span>Add Course</span><span>&rarr;</span>
+            </a>
+            
+        </div>
+    </div>
+    <div class="box-container">
+        <div class="table-responsive">
+            <table id="coursesTable" class="table table-bordered nowrap" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Course Code</th>
+                        <th>Actions</th>
+                        <th>Course Name</th>
+                        <th>Course Type</th>
+                        <th>Course Level</th>
+                        <th>Course Owner</th>
+                        <th>Program</th>
+                        <th>L</th>
+                        <th>T</th>
+                        <th>P</th>
+                        <th>S</th>
+                        <th>J</th>
+                        <th>C</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in courses %}
+                    <tr>
+                        <td>{{ c.course_code|default:"—" }}</td>
+                        <td>
+                            <a href="/courses/{{ c.enc_id }}" title="View">
+                                <i class="bx bx-show" style="color:#007367;font-size:18px;"></i>
+                            </a>
+                        </td>
+                        <td>{{ c.course_name|default:"—" }}</td>
+                        <td>{{ c.course_type.name|default:"—" }}</td>
+                        <td>{{ c.level_of_course.level|default:"—" }}</td>
+                        <td>{{ c.created_by.first_name }} {{ c.created_by.last_name }}</td>
+                        <td>{{ c.program.title|default:"—" }}</td>
+                        <td>{{ c.L|default:"—" }}</td>
+                        <td>{{ c.T|default:"—" }}</td>
+                        <td>{{ c.P|default:"—" }}</td>
+                        <td>{{ c.S|default:"—" }}</td>
+                        <td>{{ c.J|default:"—" }}</td>
+                        <td>{{ c.C|default:"—" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<script>
+$(document).ready(function () {
+    $('#coursesTable').DataTable();
+});
+</script>
+
+{% endblock %}

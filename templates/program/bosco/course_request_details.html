@@ -1,0 +1,311 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block body %}
+<style>
+    .preview-item {
+        margin-bottom: 14px;
+    }
+    .preview-item .preview-label {
+        font-size: 0.78rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: .03em;
+        margin-bottom: 2px;
+    }
+    .preview-item .preview-value {
+        font-size: 0.95rem;
+        color: #212529;
+        font-weight: 500;
+    }
+    .nav-wrapper {
+        padding: 1rem 0;
+        border-top-left-radius: 0.375rem;
+        border-top-right-radius: 0.375rem;
+    }
+    .nav {
+        display: flex;
+        margin-bottom: 0;
+        padding-left: 0;
+        list-style: none;
+        flex-wrap: wrap;
+    }
+    .nav-pills .nav-item:not(:last-child) {
+        padding-right: 1rem;
+    }
+    .nav-fill .nav-item {
+        text-align: center;
+        flex: 1 1 auto;
+    }
+    .nav-pills .nav-link {
+        font-size: .875rem;
+        font-weight: 500;
+        padding: 0.75rem 1rem;
+        transition: all .15s ease;
+        color: #007367;
+        background-color: #fff;
+        box-shadow: 0 4px 6px rgba(50, 50, 93, .11), 0 1px 3px rgba(0, 0, 0, .08);
+        border-radius: 0.375rem;
+    }
+    .nav-pills .nav-link.active,
+    .nav-pills .show > .nav-link {
+        background-color: #007367 !important;
+        color: #fff !important;
+        box-shadow: 0 4px 6px rgba(0, 115, 103, .3), 0 1px 3px rgba(0, 0, 0, .08);
+    }
+</style>
+
+<section class="content-container contentContainer" id="homeSection">
+    <div class="d-flex align-items-center justify-content-between mb-2">
+        <h5 class="text-left mb-0" style="color:#007367;">Course Request Details</h5>
+        <a href="/programs/course_requests" class="btn btn_gitam_outline rounded-pill btn-sm d-inline-flex align-items-center gap-1" style="white-space:nowrap;">
+            <i class="bx bx-arrow-back"></i><span>Back</span>
+        </a>
+    </div>
+
+    <div class="box-container">
+        <div class="nav-wrapper">
+            <ul class="nav nav-pills nav-fill flex-column flex-md-row" id="courseRequestDetailsTabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" data-bs-toggle="tab" href="#detailsTab"><i class="fa fa-file-alt mr-2"></i>Course Request Details</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#timelineTab"><i class="far fa-comment-dots mr-2"></i>Timeline</a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="tab-content mt-3">
+            <div class="tab-pane fade show active" id="detailsTab" role="tabpanel">
+                <div class="card mb-3">
+                    <div class="card-header" style="background:#e5f0ef; color:#007367;"><h6 class="mb-0">Request Details</h6></div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 preview-item">
+                                <div class="preview-label">Program</div>
+                                <div class="preview-value">{{ cr.program.ref_no|default:cr.program.title|default:"—" }}</div>
+                            </div>
+                            <div class="col-md-3 preview-item">
+                                <div class="preview-label">Request Type</div>
+                                <div class="preview-value">{{ cr.get_request_type_display }}</div>
+                            </div>
+                            <div class="col-md-3 preview-item">
+                                <div class="preview-label">Course Title</div>
+                                <div class="preview-value">{{ cr.course_title|default:"—" }}</div>
+                            </div>
+                            <div class="col-md-3 preview-item">
+                                <div class="preview-label">Department Scope</div>
+                                <div class="preview-value">{{ cr.get_dept_scope_display }}</div>
+                            </div>
+                            <div class="col-md-3 preview-item">
+                                <div class="preview-label">Department</div>
+                                <div class="preview-value">{{ cr.department.name|default:"—" }}</div>
+                            </div>
+                            <div class="col-md-3 preview-item">
+                                <div class="preview-label">Status</div>
+                                <div class="preview-value">{{ cr.request_status.name|default:"—" }}</div>
+                            </div>
+                            <div class="col-md-3 preview-item">
+                                <div class="preview-label">Raised By</div>
+                                <div class="preview-value">{{ cr.raised_by.emp_id }} | {{ cr.raised_by.first_name }} {{ cr.raised_by.last_name }}</div>
+                            </div>
+                            <div class="col-md-3 preview-item">
+                                <div class="preview-label">Created</div>
+                                <div class="preview-value">{{ cr.created|date:"d-M-Y h:i A" }}</div>
+                            </div>
+                            <div class="col-md-6 preview-item">
+                                <div class="preview-label">Justification</div>
+                                <div class="preview-value">{{ cr.justification }}</div>
+                            </div>
+                            <div class="col-md-6 preview-item">
+                                <div class="preview-label">Description</div>
+                                <div class="preview-value">{{ cr.description }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% if is_pending_here %}
+                <div class="col-12 btns-group mt-3">
+                    <button class="btn btn-primary" id="forward_button">Forward / Action</button>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="tab-pane fade" id="timelineTab" role="tabpanel">
+                {% include 'program/course_request_timeline.html' %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Initiate Course Request Modal (this BOSCO is the correct dept cochair) -->
+<div class="modal fade" id="initiateCourseRequestModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header" style="background:#e5f0ef;">
+                <h5 class="modal-title" style="color:#007367;">Initiate Course Request</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="initiateCourseRequestForm">
+                    <input type="hidden" name="course_request_id" value="{{ enc_id }}">
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select class="form-control" name="status" id="initiateStatus">
+                            <option value="" selected disabled>Select Status</option>
+                            {% for s in initiate_status_options %}
+                            <option value="{{ s.id }}">{{ s.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Comments</label>
+                        <textarea class="form-control" style="height: 104px;" name="comments" id="initiateComments" rows="3" placeholder="Comments"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="initiateSubmitBtn">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Assign Course Request Modal (request belongs to another department) -->
+<div class="modal fade" id="assignCourseRequestModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header" style="background:#e5f0ef;">
+                <h5 class="modal-title" style="color:#007367;">Assign Course Request</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="assignCourseRequestForm">
+                    <input type="hidden" name="course_request_id" value="{{ enc_id }}">
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select class="form-control" name="status" id="assignStatus">
+                            <option value="" selected disabled>Select Status</option>
+                            {% for s in assign_status_options %}
+                            <option value="{{ s.id }}">{{ s.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3" id="assignTargetWrapper">
+                        <label class="form-label">Assign To</label>
+                        <input type="text" class="form-control" id="assignTargetName" value="{{ target_cochair_name|default:'' }}" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Comments</label>
+                        <textarea class="form-control" style="height: 104px;" name="comments" id="assignComments" rows="3" placeholder="Comments"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="assignSubmitBtn">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function () {
+    var isCorrect = {{ is_correct_dept_cochair|yesno:'true,false' }};
+
+    $('#forward_button').on('click', function () {
+        if (isCorrect) {
+            $('#initiateCourseRequestForm')[0].reset();
+            $('#initiateCourseRequestModal').modal('show');
+        } else {
+            $('#assignCourseRequestForm')[0].reset();
+            $('#assignTargetName').val('{{ target_cochair_name|default:""|escapejs }}');
+            $('#assignTargetWrapper').removeClass('d-none');
+            $('#assignCourseRequestModal').modal('show');
+        }
+    });
+
+    $('#assignStatus').on('change', function () {
+        // "Need more info from Program head/HOD" sends it back to the HOD, not the dept cochair.
+        $('#assignTargetWrapper').toggleClass('d-none', this.value === '5');
+    });
+
+    var initiateValidator = $('#initiateCourseRequestForm').validate({
+        rules: {
+            status: { required: true },
+            comments: { required: true }
+        },
+        errorPlacement: function (error, element) {
+            error.insertAfter(element);
+        }
+    });
+
+    $('#initiateSubmitBtn').on('click', function () {
+        if (!$('#initiateCourseRequestForm').valid()) {
+            return;
+        }
+
+        var btn = $(this);
+        btn.prop('disabled', true);
+        $.ajax({
+            type: 'POST',
+            url: '/programs/initiate_course_request',
+            data: $('#initiateCourseRequestForm').serialize(),
+            success: function (response) {
+                btn.prop('disabled', false);
+                if (response.status === 200) {
+                    $('#initiateCourseRequestModal').modal('hide');
+                    Swal.fire({ title: 'Submitted!', icon: 'success', timer: 1200, showConfirmButton: false })
+                        .then(function () { window.location.reload(); });
+                } else {
+                    Swal.fire({ title: 'Error', text: response.message || 'Could not submit.', icon: 'error' });
+                }
+            },
+            error: function () {
+                btn.prop('disabled', false);
+                Swal.fire({ title: 'Error', text: 'Could not submit. Please try again.', icon: 'error' });
+            }
+        });
+    });
+
+    var assignValidator = $('#assignCourseRequestForm').validate({
+        rules: {
+            status: { required: true },
+            comments: { required: true }
+        },
+        errorPlacement: function (error, element) {
+            error.insertAfter(element);
+        }
+    });
+
+    $('#assignSubmitBtn').on('click', function () {
+        if (!$('#assignCourseRequestForm').valid()) {
+            return;
+        }
+
+        var btn = $(this);
+        btn.prop('disabled', true);
+        $.ajax({
+            type: 'POST',
+            url: '/programs/assign_course_request',
+            data: $('#assignCourseRequestForm').serialize(),
+            success: function (response) {
+                btn.prop('disabled', false);
+                if (response.status === 200) {
+                    $('#assignCourseRequestModal').modal('hide');
+                    Swal.fire({ title: 'Submitted!', icon: 'success', timer: 1200, showConfirmButton: false })
+                        .then(function () { window.location.reload(); });
+                } else {
+                    Swal.fire({ title: 'Error', text: response.message || 'Could not submit.', icon: 'error' });
+                }
+            },
+            error: function () {
+                btn.prop('disabled', false);
+                Swal.fire({ title: 'Error', text: 'Could not submit. Please try again.', icon: 'error' });
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

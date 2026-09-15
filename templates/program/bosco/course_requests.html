@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block body %}
+<section class="content-container contentContainer" id="homeSection">
+    <div class="d-flex justify-content-between align-items-center pb-1">
+        <h3 class="page-title">Course Requests</h3>
+    </div>
+
+    <div class="box-container">
+        <table id="courseRequestsTable" class="table table-bordered" style="width:100%">
+            <thead>
+                <tr>
+                    <th>S.No</th>
+                    <th>Program</th>
+                    <th>Request Type</th>
+                    <th>Course Title</th>
+                    <th>Department Scope</th>
+                    <th>Department</th>
+                    <th>Status</th>
+                    <th>Raised By</th>
+                    <th>Created</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cr in course_requests %}
+                <tr {% if cr.is_pending_here %}style="background-color:#fff3cd;"{% endif %}>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ cr.program.ref_no|default:cr.program.title|default:"—" }}</td>
+                    <td>{{ cr.get_request_type_display }}</td>
+                    <td>{{ cr.course_title|default:"—" }}</td>
+                    <td>{{ cr.get_dept_scope_display }}</td>
+                    <td>{{ cr.department.name|default:"—" }}</td>
+                    <td><span class="badge rounded-pill" style="background:#e5f0ef;color:#007367;">{{ cr.request_status.name|default:"—" }}</span></td>
+                    <td>{{ cr.raised_by.emp_id }} | {{ cr.raised_by.first_name }} {{ cr.raised_by.last_name }}</td>
+                    <td>{{ cr.created|date:"d-M-Y h:i A" }}</td>
+                    <td>
+                        <a href="/programs/course_request_details/{{ cr.enc_id }}" title="View">
+                            <i class="bx bx-show" style="color:#007367;font-size:18px;"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<script>
+$(document).ready(function () {
+    $('#courseRequestsTable').DataTable();
+});
+</script>
+{% endblock %}

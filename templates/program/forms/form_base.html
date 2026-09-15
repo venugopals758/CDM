@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block body %}
+
+<style>
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        appearance: none;
+        margin: 0;
+    }
+    input[type=number] {
+        -moz-appearance: textfield;
+    }
+    .card-header {
+        background-color: #e5f0ef !important;
+        color: #007367;
+        text-align: center !important;
+    }
+    .modal-header {
+        background: #e5f0ef !important;
+    }
+</style>
+<head>
+    <script>
+$(document.body).on('click', '.next_btn', function () {
+    let currentStep = parseInt($(this).data('id'));
+    let nextStep = currentStep + 1;
+    $(`.step0${currentStep}`).removeClass('active');
+    $(`.step0${nextStep}`).addClass('active');
+    $(`#stepTab${nextStep}`).addClass('active').siblings().removeClass('active');
+});
+
+$(document.body).on('click', '.prev_btn', function () {
+    let currentStep = parseInt($(this).data('id'));
+    let prevStep = currentStep - 1;
+    $(`.step0${currentStep}`).removeClass('active');
+    $(`.step0${prevStep}`).addClass('active');
+    $(`#stepTab${prevStep}`).addClass('active').siblings().removeClass('active');
+});
+
+$('.step').click(function () {
+    $('.step').removeClass('active');
+    $(this).addClass('active');
+});
+
+$('.step01').click(function () {
+    $('#stepTab1').addClass('active').siblings().removeClass('active');
+});
+
+$(document.body).on('click', '.step02', function () {
+    $('#stepTab2').addClass('active').siblings().removeClass('active');
+});
+
+$(document.body).on('click', '.step03', function () {
+    $('#stepTab3').addClass('active').siblings().removeClass('active');
+});
+
+</script>
+</head>
+<section class="content-container contentContainer" id="homeSection">
+    <div>
+        <div class="d-flex align-items-center justify-content-between mb-2">
+            <h5 class="text-left mb-0" style="color:#007367;">Add Program</h5>
+            <a href="/programs" class="btn btn_gitam_outline rounded-pill btn-sm d-inline-flex align-items-center gap-1" id="backBtn" style="white-space:nowrap;">
+                <i class="bx bx-arrow-back"></i><span>Back</span>
+            </a>
+        </div>
+        <div class="form-body page-shown">
+            <div id="basic-pills-wizard" class="twitter-bs-wizard">
+                <div class="box-container" style="margin-bottom:13px!important;">
+                    <ul class="twitter-bs-wizard-nav nav nav-pills nav-justified" role="tablist">
+                            <a href="#" class="nav-link tab-link step step01 {% if not program %}active{% endif %}" data-tab="stepTab1">
+                                <span class="step-number">{% if program %}<i class="fa fa-check"></i>{% else %}1{% endif %}</span>
+                                <span class="step-title">Basic Details</span>
+                            </a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a href="#" class="nav-link tab-link {% if program and program.active_step == 2 %}step step02 {% if program.active_step == 2 %}active{% endif %}{% endif %}" data-tab="stepTab2">
+                                <span class="step-number">{% if 2 in completed_steps %}<i class="fa fa-check"></i>{% else %}02{% endif %}</span>
+                                <span class="step-title">Program Structure</span>
+                            </a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a href="#" class="nav-link tab-link {% if program and program.active_step >= 3 %}step step03 {% if program.active_step >= 3 %}active{% endif %}{% endif %}" data-tab="stepTab3">
+                                <span class="step-number">{% if 3 in completed_steps %}<i class="fa fa-check"></i>{% else %}03{% endif %}</span>
+                                <span class="step-title">Outcomes</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="box-container">
+                    <div class="tab-content twitter-bs-wizard-tab-content">
+                        <div class="tab-pane {% if not program %}active show{% endif %}" id="stepTab1">
+                            {% include 'program/forms/basic_details.html' %}
+                        </div>
+                        <div class="tab-pane {% if program and program.active_step == 2 %}active show{% endif %}" id="stepTab2">
+                            {% include 'program/forms/program_structure.html' %}
+                        </div>
+                        <div class="tab-pane {% if program and program.active_step >= 3 %}active show{% endif %}" id="stepTab3">
+                            {% include 'program/forms/outcomes.html' %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+
+{% endblock %}

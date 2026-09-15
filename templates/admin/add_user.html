@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load user_tags %}
+{% block body %}
+<section class="content-container contentContainer" id="homeSection">
+    <div class="d-flex justify-content-between align-items-center pb-1 ">
+        <h3 class="page-title">Add User</h3>
+        <div class="d-flex gap-1">
+            <a href="/user/admin/users" class="btn btn-secondary btn-sm">Back to Users</a>
+        </div>
+    </div>
+    <div class="box-container">
+        <form method="post" action="/user/admin/users/add" id="addUserForm" autocomplete="off">
+            {% csrf_token %}
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label class="form-label">Employee ID</label>
+                    <input type="text" class="form-control" id="empSearch" placeholder="Search by employee id, name or email">
+                    <input type="hidden" name="emp_id" id="empId">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Name</label>
+                    <input type="text" class="form-control" id="empName" readonly>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Email</label>
+                    <input type="text" class="form-control" id="empEmail" readonly>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label class="form-label">Phone</label>
+                    <input type="text" class="form-control" id="empPhone" readonly>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Campus</label>
+                    <input type="text" class="form-control" id="empCampus" readonly>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Department</label>
+                    <input type="text" class="form-control" id="empDept" readonly>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label class="form-label">Role</label>
+                    <select class="form-control" name="group_id" id="groupId">
+                        <option value="">Select Role</option>
+                        {% for g in groups %}
+                        <option value="{{ g.id }}">{{ g.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary" id="saveUserBtn">Save</button>
+        </form>
+    </div>
+</section>
+
+<script>
+$(document).ready(function () {
+    $('#empSearch').autocomplete({
+        minLength: 2,
+        source: function (request, response) {
+            $.ajax({
+                type: 'POST',
+                url: '/user/admin/users/search_employee',
+                data: { term: request.term },
+                success: function (res) {
+                    var items = (res.data || []).map(function (item) {
+                        return {
+                            label: item.empid + ' - ' + (item.emp_name || '') + (item.exists ? ' (already added)' : ''),
+                            value: item.empid,
+                            exists: item.exists
+                        };
+                    });
+                    response(items);
+                }
+            });
+        },
+        select: function (event, ui) {
+            if (ui.item.exists) {
+                event.preventDefault();
+                Swal.fire({ title: 'Already Added', text: 'This employee already has a user account.', icon: 'warning' });
+                return false;
+            }
+            $('#empId').val(ui.item.value);
+            $.ajax({
+                type: 'POST',
+                url: '/user/admin/users/get_employee_data',
+                data: { emp_id: ui.item.value },
+                success: function (res) {
+                    if (res.status === 200) {
+                        $('#empName').val(res.data.emp_name || '');
+                        $('#empEmail').val(res.data.emailid || '');
+                        $('#empPhone').val(res.data.mobile || '');
+                        $('#empCampus').val(res.data.campus || '');
+                        $('#empDept').val(res.data.dept_code || '');
+                    }
+                }
+            });
+        }
+    });
+
+    $('#addUserForm').on('submit', function (e) {
+        if (!$('#empId').val()) {
+            e.preventDefault();
+            Swal.fire({ title: 'Error', text: 'Please select an employee.', icon: 'error' });
+            return false;
+        }
+        if (!$('#groupId').val()) {
+            e.preventDefault();
+            Swal.fire({ title: 'Error', text: 'Please select a role.', icon: 'error' });
+            return false;
+        }
+    });
+});
+</script>
+
+{% endblock %}

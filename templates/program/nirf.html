@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load user_tags %}
+{% block body %}
+<section class="content-container contentContainer" id="homeSection">
+    <h3 class="page-title">NIRF Data</h3>
+
+    <div class="box-container">
+        <div class="table-responsive">
+            <table id="programsTable" class="table table-bordered nowrap" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Year</th>
+                        <th>School</th>
+                        <th>Campus</th>
+                        <th>Department</th>
+                        <th>Faculty Count (Regular)</th>
+                        <th>Male Faculty</th>
+                        <th>Female Faculty</th>
+                        <th>Faculty with PhD</th>
+                        <th>Faculty without PhD</th>
+                        <th>Level of Experience &lt; 8 Years</th>
+                        <th>Level of Experience 8&ndash;15 Years</th>
+                        <th>Level of Experience &gt; 15 Years</th>
+                        <th>Patent &mdash; Published</th>
+                        <th>Patent &mdash; Granted</th>
+                        <th>Publication Count</th>
+                        <th>Ret Count</th>
+                        <th>Research Funding</th>
+                        <th>Consultancy Grants</th>
+                        <th>FDP</th>
+                        <th>MDP</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in nirf_rows %}
+                    <tr>
+                        <td>{{ row.year }}</td>
+                        <td>{{ row.school }}</td>
+                        <td>{{ row.campus }}</td>
+                        <td>{{ row.department }}</td>
+                        <td>{{ row.faculty_count_regular }}</td>
+                        <td>{{ row.male_faculty }}</td>
+                        <td>{{ row.female_faculty }}</td>
+                        <td>{{ row.faculty_with_phd }}</td>
+                        <td>{{ row.faculty_without_phd }}</td>
+                        <td>{{ row.exp_lt_8 }}</td>
+                        <td>{{ row.exp_8_15 }}</td>
+                        <td>{{ row.exp_gt_15 }}</td>
+                        <td>{{ row.patent_published }}</td>
+                        <td>{{ row.patent_granted }}</td>
+                        <td>{{ row.publication_count }}</td>
+                        <td>{{ row.ret_count }}</td>
+                        <td>{{ row.research_funding }}</td>
+                        <td>{{ row.consulting_grants }}</td>
+                        <td>{{ row.fdp }}</td>
+                        <td>{{ row.mdp }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<script>
+$(document).ready(function () {
+    $('#programsTable').DataTable({
+        order: [],
+        dom: 'Bfrtip',
+        buttons: [
+            {
+                extend: 'excelHtml5',
+                text: 'Export to Excel',
+                title: 'NIRF Data'
+            }
+        ]
+    });
+});
+</script>
+
+{% endblock %}

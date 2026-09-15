@@ -1,0 +1,148 @@
+{% load static %}
+<style>
+    .biblio-block {
+        background: rgb(251, 246, 236);
+        border-radius: 8px;
+        padding: 16px;
+    }
+    .biblio-block + .biblio-block {
+        margin-top: 16px;
+    }
+</style>
+
+<div class="fieldset-content">
+    <div class="form-section">
+        <div class="form-section-title"><i class="bx bx-book"></i>Text Book(s)</div>
+        <div id="textBooksContainer"></div>
+        <div class="text-end mt-2">
+            <button type="button" id="addTextBookBtn" class="btn btn_gitam_outline rounded-pill btn-sm">+ Add more</button>
+        </div>
+    </div>
+
+    <div class="form-section">
+        <div class="form-section-title"><i class="bx bx-bookmark-alt"></i>References</div>
+        <div id="referencesContainer"></div>
+        <div class="text-end mt-2">
+            <button type="button" id="addReferenceBtn" class="btn btn_gitam_outline rounded-pill btn-sm">+ Add more</button>
+        </div>
+    </div>
+
+    <input type="hidden" name="text_books_json" id="text_books_json">
+    <input type="hidden" name="references_json" id="references_json">
+
+    <div class="text-end mt-4">
+        <button type="button" class="btn btn-secondary prev_btn me-2" onclick="document.getElementById('step').value='3';">Previous</button>
+        <button type="submit" class="btn btn-primary" onclick="return submitBibliographyStep();">Save &amp; Next</button>
+    </div>
+</div>
+
+<script>
+(function () {
+    var EXISTING_TEXT_BOOKS = {{ text_books_json|default:"[]"|safe }};
+    var EXISTING_REFERENCES = {{ references_json|default:"[]"|safe }};
+
+    function addTextBookBlock(data) {
+        data = data || {};
+        var block = $('<div class="biblio-block">' +
+            '<div class="row g-2">' +
+                '<div class="col-md-8"><label class="form-label">Author(s) Name (Separated by comma)</label>' +
+                    '<input type="text" class="form-control tb-author" placeholder="Enter author names" value="' + (data.author || '') + '"></div>' +
+                '<div class="col-md-4"><label class="form-label">Year</label>' +
+                    '<input type="number" class="form-control tb-year" placeholder="Year" value="' + (data.year != null ? data.year : '') + '"></div>' +
+                '<div class="col-md-8"><label class="form-label">Title</label>' +
+                    '<input type="text" class="form-control tb-title" placeholder="Book title" value="' + (data.title || '') + '"></div>' +
+                '<div class="col-md-4"><label class="form-label">Edition</label>' +
+                    '<input type="text" class="form-control tb-edition" placeholder="Edition number" value="' + (data.edition || '') + '"></div>' +
+                '<div class="col-md-5"><label class="form-label">Publisher</label>' +
+                    '<input type="text" class="form-control tb-publisher" placeholder="Publisher name" value="' + (data.publisher || '') + '"></div>' +
+                '<div class="col-md-4"><label class="form-label">Place of Publication</label>' +
+                    '<input type="text" class="form-control tb-place" placeholder="Place of Publication" value="' + (data.place_of_publication || '') + '"></div>' +
+                '<div class="col-md-3"><label class="form-label">ISBN</label>' +
+                    '<input type="text" class="form-control tb-isbn" placeholder="ISBN number" value="' + (data.isbn || '') + '"></div>' +
+            '</div>' +
+            '<div class="text-end mt-2"><button type="button" class="btn btn-outline-danger btn-sm remove-block"><i class="bx bx-trash"></i></button></div>' +
+        '</div>');
+        $('#textBooksContainer').append(block);
+    }
+
+    function addReferenceBlock(data) {
+        data = data || {};
+        var block = $('<div class="biblio-block">' +
+            '<div class="row g-2">' +
+                '<div class="col-md-8"><label class="form-label">Author(s) Name (Separated by comma)</label>' +
+                    '<input type="text" class="form-control ref-author" placeholder="Enter author names" value="' + (data.author || '') + '"></div>' +
+                '<div class="col-md-4"><label class="form-label">Year</label>' +
+                    '<input type="number" class="form-control ref-year" placeholder="Year" value="' + (data.year != null ? data.year : '') + '"></div>' +
+                '<div class="col-md-8"><label class="form-label">Title</label>' +
+                    '<input type="text" class="form-control ref-title" placeholder="Book title" value="' + (data.title || '') + '"></div>' +
+                '<div class="col-md-4"><label class="form-label">Edition</label>' +
+                    '<input type="text" class="form-control ref-edition" placeholder="Edition number" value="' + (data.edition || '') + '"></div>' +
+                '<div class="col-md-5"><label class="form-label">Publisher</label>' +
+                    '<input type="text" class="form-control ref-publisher" placeholder="Publisher name" value="' + (data.publisher || '') + '"></div>' +
+                '<div class="col-md-4"><label class="form-label">Place of Publication</label>' +
+                    '<input type="text" class="form-control ref-place" placeholder="Place of Publication" value="' + (data.place_of_publication || '') + '"></div>' +
+                '<div class="col-md-3"><label class="form-label">ISBN</label>' +
+                    '<input type="text" class="form-control ref-isbn" placeholder="ISBN number" value="' + (data.isbn || '') + '"></div>' +
+                '<div class="col-md-12"><label class="form-label">DOI/URL</label>' +
+                    '<input type="text" class="form-control ref-url" placeholder="DOI/URL" value="' + (data.url || '') + '"></div>' +
+            '</div>' +
+            '<div class="text-end mt-2"><button type="button" class="btn btn-outline-danger btn-sm remove-block"><i class="bx bx-trash"></i></button></div>' +
+        '</div>');
+        $('#referencesContainer').append(block);
+    }
+
+    $(document).on('click', '.remove-block', function () {
+        $(this).closest('.biblio-block').remove();
+    });
+
+    $('#addTextBookBtn').on('click', function () { addTextBookBlock(); });
+    $('#addReferenceBtn').on('click', function () { addReferenceBlock(); });
+
+    window.submitBibliographyStep = function () {
+        document.getElementById('step').value = '3';
+
+        var textBooks = [];
+        $('#textBooksContainer > .biblio-block').each(function () {
+            textBooks.push({
+                author: $(this).find('.tb-author').val(),
+                year: $(this).find('.tb-year').val() || null,
+                title: $(this).find('.tb-title').val(),
+                edition: $(this).find('.tb-edition').val(),
+                publisher: $(this).find('.tb-publisher').val(),
+                place_of_publication: $(this).find('.tb-place').val(),
+                isbn: $(this).find('.tb-isbn').val(),
+            });
+        });
+        document.getElementById('text_books_json').value = JSON.stringify(textBooks);
+
+        var references = [];
+        $('#referencesContainer > .biblio-block').each(function () {
+            references.push({
+                author: $(this).find('.ref-author').val(),
+                year: $(this).find('.ref-year').val() || null,
+                title: $(this).find('.ref-title').val(),
+                edition: $(this).find('.ref-edition').val(),
+                publisher: $(this).find('.ref-publisher').val(),
+                place_of_publication: $(this).find('.ref-place').val(),
+                isbn: $(this).find('.ref-isbn').val(),
+                url: $(this).find('.ref-url').val(),
+            });
+        });
+        document.getElementById('references_json').value = JSON.stringify(references);
+
+        return true;
+    };
+
+    if (EXISTING_TEXT_BOOKS.length) {
+        EXISTING_TEXT_BOOKS.forEach(function (b) { addTextBookBlock(b); });
+    } else {
+        addTextBookBlock();
+    }
+
+    if (EXISTING_REFERENCES.length) {
+        EXISTING_REFERENCES.forEach(function (r) { addReferenceBlock(r); });
+    } else {
+        addReferenceBlock();
+    }
+})();
+</script>

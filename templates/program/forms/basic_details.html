@@ -1,0 +1,437 @@
+<link rel="stylesheet" href="https://cdn.gitam.edu/vendor/select2/select2.min.css"/>
+<script src="https://cdn.gitam.edu/vendor/select2/select2.min.js"></script>
+
+<style>
+    .select2-container--default .select2-selection--single {
+        height: 38px;
+        border: 1px solid #ced4da;
+        display: flex;
+        align-items: center;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: normal;
+        padding-left: 12px;
+    }
+    .select2-container--default.select2-container--focus .select2-selection--single,
+    .select2-container--default .select2-selection--single:focus {
+        border-color: #007367;
+    }
+    .select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
+        background-color: #007367 !important;
+    }
+    .select2-dropdown { border-color: #007367; }
+</style>
+
+<form id="basicDetailsForm" method="POST" enctype="multipart/form-data">
+{% csrf_token %}
+<input type="hidden" name="program_id" id="program_id_field" value="{{ enc_program_id }}">
+<div class="row g-3">
+    <div class="col-md-3">
+        <label class="form-label">Admitted Batch</label>
+        <select class="form-select" id="program_batch" name="program_batch" required>
+            <option value="" selected disabled hidden>Select</option>
+            {% for b in program_batches %}
+            <option value="{{ b.id }}" {% if program.program_batch_id == b.id %}selected{% endif %}>{{ b.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Program Type</label>
+        <select class="form-select" id="program_type" name="program_type" required>
+            <option value="" selected disabled hidden>Select</option>
+            {% for t in program_type %}
+            <option value="{{ t.id }}" {% if program.program_type_id == t.id %}selected{% endif %}>{{ t.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+   
+    <div class="col-md-3">
+        <label class="form-label">Temporary Program Title</label>
+        <input type="text" autocomplete="off" name="temp_program_title" id="temp_program_title" class="form-control" placeholder="Enter temporary program title" value="{% if program.title %}{{ program.title }}{% endif %}" required>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Program Code</label>
+        <input type="text" autocomplete="off" name="code" id="program_code" class="form-control" placeholder="e.g. BT-CSE" value="{% if program.code %}{{ program.code }}{% endif %}" required>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Minimum Credits</label>
+        <input type="number" min="0" autocomplete="off" name="minimum_credits" id="minimum_credits" class="form-control" placeholder="e.g. 160" value="{% if program.minimum_credits %}{{ program.minimum_credits }}{% endif %}" required>
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label">Program Level</label>
+        <select class="form-select" id="program_level" name="program_level" required>
+            <option value="" selected disabled hidden>Select</option>
+            {% for l in program_levels %}
+            <option value="{{ l.id }}" {% if program.program_level_id == l.id %}selected{% endif %}>{{ l.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Program Credit Level</label>
+        <select class="form-select" id="program_level_credits" name="program_level_credits" required>
+            <option value="" selected disabled hidden>Select</option>
+
+        </select>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">School</label>
+        <select class="form-select" id="school" name="school" required>
+            <option value="" selected disabled hidden>Select</option>
+            {% for s in schools %}
+            <option value="{{ s.id }}" {% if program.school_id == s.id %}selected{% endif %}>{{ s.name }}{% if s.code %} ({{ s.code }}){% endif %}</option>
+            {% endfor %}
+        </select>
+    </div>
+    
+</div>
+
+<hr class="my-4">
+
+<div class="row g-3">
+    <div class="col-md-3">
+        <label class="form-label">Duration of Program</label>
+        <input type="number" min="1" autocomplete="off" name="duration" id="duration" class="form-control" placeholder="Select Program Level and School" value="{% if program.duration %}{{ program.duration }}{% endif %}" readonly required>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Do you have an Exit Plan for this program?</label>
+        <select class="form-select" id="has_exit_plan" disabled>
+            <option value="" selected disabled hidden>Select Program Level and School</option>
+            <option value="1" {% if program.has_exit_plan %}selected{% endif %}>Yes</option>
+            <option value="0" {% if program and not program.has_exit_plan %}selected{% endif %}>No</option>
+        </select>
+        <input type="hidden" name="has_exit_plan" id="has_exit_plan_value" value="{% if program.has_exit_plan %}1{% elif program %}0{% endif %}">
+    </div>
+
+    <div class="col-md-3 {% if not program.has_exit_plan %}d-none{% endif %}" id="exitMinimumCreditsWrapper">
+        <label class="form-label">Minimum Credits for Exit Plan</label>
+        <input type="number" min="0" autocomplete="off" name="exit_minimum_credits" id="exit_minimum_credits" class="form-control" placeholder="e.g. 80" value="{% if program.exit_minimum_credits %}{{ program.exit_minimum_credits }}{% endif %}">
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label">Upload Program Structure (PDF) </label>
+        <input type="file" name="program_structure_pdf" id="program_structure_pdf" class="form-control" accept="application/pdf" {% if program.program_structure_pdf %}style="display:none;"{% endif %}>
+        <div id="programStructurePdfDisplay" class="form-control d-flex align-items-center justify-content-between {% if not program.program_structure_pdf %}d-none{% endif %}">
+            <span class="text-truncate" id="programStructurePdfName">Program Structure</span>
+            <span class="d-flex gap-2 ms-2">
+                <a href="{% if program.program_structure_pdf %}{{ program.program_structure_pdf.url }}{% endif %}" target="_blank" id="programStructurePdfPreviewLink" title="Preview PDF">
+                    <i class="bx bx-show" style="color:#007367;font-size:18px;"></i>
+                </a>
+                <a href="javascript:void(0);" id="programStructurePdfEditLink" title="Replace file">
+                    <i class="bx bx-edit-alt" style="color:#007367;font-size:18px;"></i>
+                </a>
+            </span>
+        </div>
+    </div>
+
+    
+</div>
+
+<!-- Existing-program picker: opened when Program Type = Existing Program -->
+<div class="modal fade" id="chooseExistingProgramModal" tabindex="-1" aria-labelledby="chooseExistingProgramLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="background:#e5f0ef;">
+                <h5 class="modal-title" id="chooseExistingProgramLabel" style="color:#007367;">Choose Existing Program</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <label class="form-label">Program</label>
+                <select class="form-select" id="existing_program_modal_select">
+                    <option value="" selected disabled hidden>Select existing program</option>
+                    {% for p in existing_programs %}
+                    <option value="{{ p.id }}">{{ p.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn_gitam_outline rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn_gitam rounded-pill" id="confirmExistingProgramBtn">Choose</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<hr class="my-4">
+
+<div class="row g-3">
+    
+    <div class="col-md-4">
+        <label class="form-label">Program Head / HOD</label>
+        <select class="form-select" id="program_head" name="program_head" required>
+            <option value="" selected disabled hidden>Select a School first</option>
+        </select>
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Choose PO Stream</label>
+        <select class="form-select" id="program_stream" name="program_stream" required>
+            <option value="" selected disabled hidden>Select PO Stream</option>
+            {% for st in program_streams %}
+            <option value="{{ st.id }}" {% if program.program_stream_id == st.id %}selected{% endif %}>{{ st.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+</div>
+
+<hr class="my-4">
+
+
+<ul class="pager wizard twitter-bs-wizard-pager-link form-footer">
+        <li>
+            <button type="submit" class="btn btn-secondary submit_type" id="saveProgramDraftBtn" data-value="1" >Save as Draft</button>
+        </li>
+        <li>
+            <input type="submit" class="btn btn-primary submit_type" data-value="2"  value="Save & Next" >
+        </li>
+    </ul>
+</form>
+
+<script>
+$(document).ready(function () {
+
+    var hasExistingProgramStructurePdf = {% if program.program_structure_pdf %}true{% else %}false{% endif %};
+
+    // Show "Minimum Credits for Exit Plan" only when the Exit Plan answer is Yes
+    $('#has_exit_plan').on('change', function () {
+        $('#has_exit_plan_value').val(this.value);
+        $('#exitMinimumCreditsWrapper').toggleClass('d-none', this.value !== '1');
+        if (this.value !== '1') {
+            $('#exit_minimum_credits').val('');
+        }
+    });
+
+    // Duration & Exit Plan are auto-filled (read-only) from ProgramSchoolDurationExitplanMapping
+    // based on the chosen Program Level + School
+    function refreshDurationAndExitPlan() {
+        var levelId = $('#program_level').val();
+        var schoolId = $('#school').val();
+
+        if (!levelId || !schoolId) {
+            $('#duration').val('');
+            $('#has_exit_plan').val('').prop('disabled', true);
+            $('#has_exit_plan_value').val('');
+            $('#exitMinimumCreditsWrapper').addClass('d-none');
+            return;
+        }
+
+        $.ajax({
+            type: 'GET',
+            url: '/programs/get_duration_exit_plan',
+            data: { program_level: levelId, school: schoolId },
+            success: function (response) {
+                if (!response.found) {
+                    $('#duration').val('');
+                    $('#has_exit_plan').val('').prop('disabled', true);
+                    $('#has_exit_plan_value').val('');
+                    $('#exitMinimumCreditsWrapper').addClass('d-none');
+                    Swal.fire({ title: 'Not configured', text: 'No Duration / Exit Plan mapping found for this Program Level and School.', icon: 'warning' });
+                    return;
+                }
+                $('#duration').val(response.duration);
+                $('#has_exit_plan').val(response.exit_plan ? '1' : '0').prop('disabled', true).trigger('change');
+            },
+            error: function () {
+                $('#duration').val('');
+                $('#has_exit_plan').val('').prop('disabled', true);
+                $('#has_exit_plan_value').val('');
+                $('#exitMinimumCreditsWrapper').addClass('d-none');
+            }
+        });
+    }
+
+    // Only re-derive on an actual School/Program Level change - an existing program's
+    // duration/has_exit_plan are already rendered from its own saved values above, and
+    // must not silently drift if the mapping is edited later.
+    $('#program_level, #school').on('change', refreshDurationAndExitPlan);
+
+    // Program Head / HOD options come from the BOS Cochair mapping for the chosen School
+    var selectedProgramHeadId = {{ program.program_head_id|default:"null" }};
+
+    function refreshProgramHeads() {
+        var schoolId = $('#school').val();
+        var $programHead = $('#program_head');
+
+        if (!schoolId) {
+            $programHead.empty().append('<option value="" selected disabled hidden>Select a School first</option>').trigger('change');
+            return;
+        }
+
+        $.ajax({
+            type: 'GET',
+            url: '/programs/get_hods_by_school',
+            data: { school: schoolId },
+            success: function (response) {
+                $programHead.empty().append('<option value="" selected disabled hidden>Select Program Head / HOD</option>');
+                (response.hods || []).forEach(function (h) {
+                    var label = [h.emp_id, [h.first_name, h.last_name].filter(Boolean).join(' '), h.campus, h.school_code, h.dept_code, h.designation]
+                        .filter(Boolean).join(' | ');
+                    $programHead.append($('<option>', { value: h.id, text: label }));
+                });
+                if (selectedProgramHeadId && $programHead.find('option[value="' + selectedProgramHeadId + '"]').length) {
+                    $programHead.val(selectedProgramHeadId);
+                }
+                selectedProgramHeadId = null;
+                $programHead.trigger('change');
+            },
+            error: function () {
+                $programHead.empty().append('<option value="" selected disabled hidden>Select Program Head / HOD</option>').trigger('change');
+            }
+        });
+    }
+
+    $('#school').on('change', refreshProgramHeads);
+
+    {% if program.school_id %}
+    refreshProgramHeads();
+    {% endif %}
+
+    // Once a PDF is chosen, swap the raw file input for a filename + preview/replace icon row
+    $('#program_structure_pdf').on('change', function () {
+        var file = this.files && this.files[0];
+        if (!file) {
+            return;
+        }
+        $('#programStructurePdfName').text(file.name);
+        $('#programStructurePdfPreviewLink').attr('href', URL.createObjectURL(file));
+        $(this).hide();
+        $('#programStructurePdfDisplay').removeClass('d-none');
+    });
+
+    // Edit icon: go back to the file picker to choose a different PDF
+    $('#programStructurePdfEditLink').on('click', function () {
+        $('#programStructurePdfDisplay').addClass('d-none');
+        $('#program_structure_pdf').val('').show();
+    });
+
+    // Enable search on the three long lookup dropdowns
+    $('#program_head').select2({ placeholder: 'Select Program Head / HOD', width: '100%' });
+    $('#school').select2({ placeholder: 'Select School', width: '100%' });
+    $('#program_stream').select2({ placeholder: 'Select PO Stream', width: '100%' });
+
+    // Re-populate "Program Credit Level" whenever Program Level changes.
+    // preselect (only passed when triggered on page load for edit mode) marks the saved value once options arrive.
+    $('#program_level').on('change', function (event, preselect) {
+        var levelId = $(this).val();
+        var creditSelect = $('#program_level_credits');
+        creditSelect.prop('disabled', true).html('<option value="" selected disabled hidden>Loading...</option>');
+        $.ajax({
+            type: 'GET',
+            url: '/programs/get_credit_levels_by_program_level',
+            data: { program_level: levelId },
+            success: function (response) {
+                creditSelect.html('<option value="" selected disabled hidden>Select</option>');
+                $.each(response.credit_levels, function (i, val) {
+                    var isSelected = preselect !== undefined && preselect !== '' && parseFloat(val) === parseFloat(preselect);
+                    creditSelect.append('<option value="' + val + '"' + (isSelected ? ' selected' : '') + '>' + val + '</option>');
+                });
+                creditSelect.prop('disabled', false);
+            },
+            error: function () {
+                creditSelect.html('<option value="" selected disabled hidden>Select</option>');
+                creditSelect.prop('disabled', false);
+            }
+        });
+    });
+
+    {% if program.program_level_id %}
+    // Editing an existing program: fetch its level's credit options and pre-select the saved value
+    $('#program_level').trigger('change', ['{{ program.program_level_credits|default:"" }}']);
+    {% endif %}
+
+    $('#program_type').on('change', function () {
+        if (this.value === '2') {
+            $('#temp_program_title').prop('readonly', true);
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('chooseExistingProgramModal')).show();
+        } else {
+            $('#temp_program_title').prop('readonly', false).val('');
+            $('#existing_program_id').val('');
+        }
+    });
+
+    // Confirm button in the picker modal: copy the chosen program's name + id back onto the main form
+    $('#confirmExistingProgramBtn').on('click', function () {
+        var selected = $('#existing_program_modal_select option:selected');
+        if (!selected.val()) {
+            return;
+        }
+        $('#temp_program_title').val(selected.text());
+        $('#existing_program_id').val(selected.val());
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('chooseExistingProgramModal')).hide();
+    });
+
+    // jQuery Validate setup for this step's form
+    $('#basicDetailsForm').validate({
+        rules: {
+            code:                 { required: true },
+            minimum_credits:      { required: true },
+            program_level:        { required: true },
+            program_level_credits: { required: true },
+            program_batch:        { required: true },
+            duration:             { required: true },
+            has_exit_plan:        { required: true },
+            exit_minimum_credits: {
+                required: function () {
+                    return $('#has_exit_plan').val() === '1';
+                }
+            },
+            program_structure_pdf: {
+                required: function () {
+                    return !hasExistingProgramStructurePdf;
+                }
+            },
+            program_type:         { required: true },
+            program_type_status:  { required: true },
+            temp_program_title:   { required: true },
+            school:               { required: true },
+            program_head:         { required: true },
+            program_stream:       { required: true },
+            existing_program: {
+                required: function () {
+                    return $('#program_type_status').val() === 'existing';
+                }
+            }
+        },
+        messages: {
+            existing_program: { required: 'Please choose an existing program.' }
+        },
+        errorPlacement: function (error, element) {
+            if (element.hasClass('select2-hidden-accessible')) {
+                error.insertAfter(element.next('.select2'));
+            } else {
+                error.insertAfter(element);
+            }
+        },
+        submitHandler: function (form) {
+            $('#overlay').fadeIn();
+            var submit_type = $(document.activeElement).data('value');
+            var formData = new FormData(document.getElementById('basicDetailsForm'));
+            formData.append('btn_type', submit_type);
+            $.ajax({
+                type: 'POST',
+                url: '/programs/save_basic_details',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    $('#overlay').fadeOut();
+                    if (response.status === 200) {
+                        Swal.fire({ title: 'Saved!', icon: 'success', timer: 1000, showConfirmButton: false }).then(function () {
+                            if (submit_type == 1) {
+                                window.location.href = '/programs';
+                            } else {
+                                window.location.href = '/programs/edit_program/' + response.enc_id;
+                            }
+                        });
+                    } else {
+                        Swal.fire({ title: 'Error', text: response.message, icon: 'error' });
+                    }
+                },
+                error: function () {
+                    $('#overlay').fadeOut();
+                    Swal.fire({ title: 'Error', text: 'Could not save. Please try again.', icon: 'error' });
+                }
+            });
+        }
+    });
+});
+</script>
