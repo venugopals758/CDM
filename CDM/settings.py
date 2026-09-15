@@ -166,3 +166,6 @@ EMAIL_USE_TLS  = True
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+TEST_E = [502970]
