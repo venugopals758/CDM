@@ -1,0 +1,40 @@
+<div class="card mb-3">
+    <div class="card-header" style="background:#e5f0ef; color:#007367;"><h6 class="mb-0">Course Category wise Credit Structure &ndash; {{ track.name }}</h6></div>
+    <div class="card-body">
+        {% if track.rows %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-sm align-middle mb-0" style="table-layout:fixed;">
+                <thead class="table-light">
+                    <tr>
+                        <th class="text-center" style="width:8%;">S.No</th>
+                        <th style="width:37%;">Course Category</th>
+                        <th class="text-center" style="width:20%;">Category Code</th>
+                        <th class="text-center" style="width:17.5%;">Credits</th>
+                        <th class="text-center" style="width:17.5%;">Percentage (%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in track.rows %}
+                    <tr>
+                        <td class="text-center">{{ forloop.counter }}</td>
+                        <td>{{ row.course_category.category }}</td>
+                        <td class="text-center">{{ row.course_category.code }}</td>
+                        <td class="text-center">{{ row.no_of_credits|default_if_none:"—" }}</td>
+                        <td class="text-center">{{ row.percentage_of_credits|floatformat:2|default_if_none:"—" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr style="background-color:#e5f0ef;">
+                        <td colspan="3" class="text-end fw-bold">Total</td>
+                        <td class="text-center fw-bold">{{ track.totals.credits }}</td>
+                        <td class="text-center fw-bold">{{ track.totals.percentage|floatformat:2 }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted mb-0">No course category rows added.</p>
+        {% endif %}
+    </div>
+</div>
