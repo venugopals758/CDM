@@ -393,7 +393,7 @@ def assign_course_request(request):
             status_id = int(status_id)
 
             cr = CourseRequest.objects.filter(
-                id=course_request_id, pending_at_id=request.user.id, request_status_id__in=[1, 4, 6]
+                id=course_request_id, pending_at_id=request.user.id, request_status_id__in=[1, 4, 6,8]
             ).select_related('program', 'department', 'request_status', 'raised_by').first()
             if not cr:
                 return JsonResponse({'status': 404, 'message': 'Request not found or not assigned to you.'})

@@ -80,6 +80,8 @@ def program_details(request, id):
         program_status = program_status.none()
     hod_department = None
     course_requests_pending = False
+    repository_courses = []
+    repository_categories = []
     if 'HOD' in groups:
         template = 'program/hod/program_details.html'
         hod_mapping = BosCochairHODDeptMapping.objects.filter(
@@ -91,6 +93,21 @@ def program_details(request, id):
         # has been resolved (pending_at cleared - either initiated or cancelled).
         course_requests_pending = course_requests.filter(pending_at__isnull=False).exists()
         program_status = ProgramStatus.objects.filter(id=7)  # Program Head Curriculum Submitted
+
+        mapped_course_ids = set(ProgramCourseMapping.objects.filter(
+            program=program
+        ).values_list('course_id', flat=True))
+
+        repository_courses = Course.objects.filter(
+            program_id=program.id, is_delete=False
+        ).select_related('course_type', 'course_category').order_by('course_code')
+        for c in repository_courses:
+            c.enc_id = encrypt(c.id)
+            c.is_mapped = c.id in mapped_course_ids
+
+        repository_categories = sorted({
+            c.course_category.category for c in repository_courses if c.course_category_id
+        })
 
     forward_access = False
     user_group = UserGroups.objects.filter(user_id=request.user.id, is_active=1).first()
@@ -116,5 +133,7 @@ def program_details(request, id):
         ).order_by('name'),
         'course_requests': course_requests,
         'course_requests_pending': course_requests_pending,
+        'repository_courses': repository_courses,
+        'repository_categories': repository_categories,
     }
     return render(request, template, context)

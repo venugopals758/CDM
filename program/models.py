@@ -82,6 +82,7 @@ class Programs(models.Model):
     title = models.CharField(max_length=100,null=True)
     duration = models.IntegerField(null=True, blank=True)
     has_exit_plan = models.BooleanField(null=True, blank=True)
+    exit_end_of_year = models.IntegerField(null=True, blank=True)
     exit_minimum_credits = models.IntegerField(null=True, blank=True)
     program_type = models.ForeignKey(ProgramType, on_delete=models.CASCADE,null=True,blank=True)
     program_level = models.ForeignKey(ProgramLevel, on_delete=models.CASCADE,null=True,blank=True)
@@ -126,6 +127,16 @@ class ProgramTrackCourseStructureMapping(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     class Meta:
         db_table = 'program_track_course_structure_mapping'
+
+
+class ProgramCourseMapping(models.Model):
+    program = models.ForeignKey(Programs, on_delete=models.CASCADE, related_name='course_mappings')
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='program_mappings')
+    mapped_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        db_table = 'program_course_mapping'
+        unique_together = ('program', 'course')
 
 
 class ProgramTrackingStatus(models.Model):

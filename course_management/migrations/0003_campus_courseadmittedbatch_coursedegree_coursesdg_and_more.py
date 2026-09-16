@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('auth', '0013_group_description_group_priority'),
+       # ('auth', '0013_group_description_group_priority'),
         ('course_management', '0002_remove_coursecategory_short_code'),
         ('program', '0032_courserequesttrackingstatus_campus_and_more'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),

@@ -21,36 +21,45 @@
     .timeline__event--type2 .timeline__event__icon:after {
         background: #007367 !important;
     }
-    .timeline__event--type3 .timeline__event__date {
-        color: #fff;
-        background: #6c757d !important;
-    }
-    .timeline__event--type3 .timeline__event__title {
-        color: #6c757d !important;
-    }
-    .timeline__event--type3 .timeline__event__icon {
-        background: #6c757d !important;
-        color: #fff;
-    }
-    .timeline__event--type3:nth-child(2n+1) .timeline__event__icon:before,
-    .timeline__event--type3:nth-child(2n+1) .timeline__event__icon:after {
-        background: #6c757d !important;
-    }
-    .timeline__event--type3 .timeline__event__icon:before,
-    .timeline__event--type3 .timeline__event__icon:after {
-        background: #6c757d !important;
-    }
     .timeline__event__content {
         background: #e5f0ef !important;
+        min-height: 110px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
     .timeline__event {
         width: 90% !important;
+    }
+
+    /* ── Pending (next-step) node ── */
+    .tl-pending .timeline__event__icon {
+        background: #adb5bd !important;
+    }
+    .tl-pending .timeline__event__icon:before,
+    .tl-pending .timeline__event__icon:after {
+        background: repeating-linear-gradient(0deg, #adb5bd, #adb5bd 4px, transparent 4px, transparent 8px) !important;
+    }
+    .tl-pending .timeline__event__date {
+        background: #adb5bd !important;
+        color: #fff;
+    }
+    .tl-pending .timeline__event__content {
+        background: #f1f3f5 !important;
+        border: 1px dashed #ced4da;
+    }
+    .tl-pending .timeline__event__title {
+        color: #6c757d !important;
+    }
+    .tl-pending .status-pending {
+        background: #adb5bd !important;
+        color: #fff;
     }
 </style>
 
 <div class="timeline">
     {% if is_pending_doaa %}
-    <div class="timeline__event animated fadeInUp delay-0.25s timeline__event--type3">
+    <div class="timeline__event animated fadeInUp delay-0.25s timeline__event--type2 tl-pending">
         <div class="timeline__event__icon">
             <img src="https://gstaff.gitam.edu/img1.aspx?empid=" class="timeline-userimg">
         </div>
@@ -60,15 +69,15 @@
         <div class="timeline__event__content" style="width:75%">
             <div class="timeline__event__title">
                 Pending at DoAA
-                <span class="status">Pending</span>
+                <span class="status status-pending">Pending</span>
             </div>
             <div class="timeline__event__description">
-
+                <p>Awaiting action from DoAA.</p>
             </div>
         </div>
     </div>
     {% elif program.pending_at %}
-    <div class="timeline__event animated fadeInUp delay-0.25s timeline__event--type3">
+    <div class="timeline__event animated fadeInUp delay-0.25s timeline__event--type2 tl-pending">
         <div class="timeline__event__icon">
             <img src="https://gstaff.gitam.edu/img1.aspx?empid={{ program.pending_at.emp_id }}" class="timeline-userimg">
         </div>
@@ -78,7 +87,7 @@
         <div class="timeline__event__content" style="width:75%">
             <div class="timeline__event__title">
                 {{ program.pending_at.first_name }} {{ program.pending_at.last_name }}
-                <span class="status">Pending</span>
+                <span class="status status-pending">Pending</span>
                 <br>
                 <span class="designation">
                     {% if pending_group_name %}{{ pending_group_name }}{% endif %}
@@ -87,7 +96,7 @@
                 </span>
             </div>
             <div class="timeline__event__description">
-
+                <p>Awaiting action from {{ program.pending_at.first_name }}.</p>
             </div>
         </div>
     </div>

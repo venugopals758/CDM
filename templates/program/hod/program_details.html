@@ -85,8 +85,9 @@
                         <input type="text" class="form-control form-control-sm" id="courseRepoSearch" placeholder="Search by code or title" style="width:220px;">
                         <select class="form-control form-control-sm" id="courseRepoCategoryFilter" style="width:140px;">
                             <option value="">All Categories</option>
-                            <option value="Core">Core</option>
-                            <option value="Elective">Elective</option>
+                            {% for category in repository_categories %}
+                            <option value="{{ category }}">{{ category }}</option>
+                            {% endfor %}
                         </select>
                         <button type="button" class="btn btn-primary btn-sm" id="mapSelectedBtn" disabled>Map Selected</button>
                     </div>
@@ -106,66 +107,34 @@
                         </tr>
                     </thead>
                         <tbody>
-                            <tr data-category="Core">
-                                <td><input type="checkbox" class="course-repo-check"></td>
-                                <td>FIN101</td>
-                                <td>Principles of Financial Accounting</td>
-                                <td>4</td>
-                                <td>Theory</td>
-                                <td>Core</td>
-                                <td><span class="badge rounded-pill status-badge" style="background:#e5f0ef;color:#007367;">Mapped</span></td>
-                                <td><button type="button" class="btn btn-sm btn-outline-secondary map-course-btn" disabled>Mapped</button></td>
+                            {% for course in repository_courses %}
+                            <tr data-course-id="{{ course.enc_id }}">
+                                <td><input type="checkbox" class="course-repo-check" {% if course.is_mapped %}disabled{% endif %}></td>
+                                <td>{{ course.course_code|default:"—" }}</td>
+                                <td>{{ course.course_name|default:"—" }}</td>
+                                <td>{{ course.C|default:"—" }}</td>
+                                <td>{{ course.course_type.name|default:"—" }}</td>
+                                <td>{{ course.course_category.category|default:"—" }}</td>
+                                <td>
+                                    {% if course.is_mapped %}
+                                    <span class="badge rounded-pill status-badge" style="background:#e5f0ef;color:#007367;">Mapped</span>
+                                    {% else %}
+                                    <span class="badge rounded-pill status-badge" style="background:#fff3cd;color:#856404;">Not Mapped</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if course.is_mapped %}
+                                    <button type="button" class="btn btn-sm btn-outline-secondary map-course-btn" disabled>Mapped</button>
+                                    {% else %}
+                                    <button type="button" class="btn btn-sm btn-primary map-course-btn">Map</button>
+                                    {% endif %}
+                                </td>
                             </tr>
-                            <tr data-category="Core">
-                                <td><input type="checkbox" class="course-repo-check"></td>
-                                <td>FIN205</td>
-                                <td>Corporate Finance</td>
-                                <td>3</td>
-                                <td>Theory</td>
-                                <td>Core</td>
-                                <td><span class="badge rounded-pill status-badge" style="background:#e5f0ef;color:#007367;">Mapped</span></td>
-                                <td><button type="button" class="btn btn-sm btn-outline-secondary map-course-btn" disabled>Mapped</button></td>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8" class="text-center text-muted">No courses have been created for this program yet.</td>
                             </tr>
-                            <tr data-category="Elective">
-                                <td><input type="checkbox" class="course-repo-check"></td>
-                                <td>FIN310</td>
-                                <td>Financial Risk Management Lab</td>
-                                <td>2</td>
-                                <td>Practical</td>
-                                <td>Elective</td>
-                                <td><span class="badge rounded-pill status-badge" style="background:#fff3cd;color:#856404;">Not Mapped</span></td>
-                                <td><button type="button" class="btn btn-sm btn-primary map-course-btn">Map</button></td>
-                            </tr>
-                            <tr data-category="Elective">
-                                <td><input type="checkbox" class="course-repo-check"></td>
-                                <td>FIN402</td>
-                                <td>International Business Finance</td>
-                                <td>3</td>
-                                <td>Theory + Practical</td>
-                                <td>Elective</td>
-                                <td><span class="badge rounded-pill status-badge" style="background:#fff3cd;color:#856404;">Not Mapped</span></td>
-                                <td><button type="button" class="btn btn-sm btn-primary map-course-btn">Map</button></td>
-                            </tr>
-                            <tr data-category="Elective">
-                                <td><input type="checkbox" class="course-repo-check"></td>
-                                <td>FIN415</td>
-                                <td>Behavioral Finance</td>
-                                <td>3</td>
-                                <td>Theory</td>
-                                <td>Elective</td>
-                                <td><span class="badge rounded-pill status-badge" style="background:#fff3cd;color:#856404;">Not Mapped</span></td>
-                                <td><button type="button" class="btn btn-sm btn-primary map-course-btn">Map</button></td>
-                            </tr>
-                            <tr data-category="Core">
-                                <td><input type="checkbox" class="course-repo-check"></td>
-                                <td>FIN501</td>
-                                <td>Investment Analysis & Portfolio Management</td>
-                                <td>4</td>
-                                <td>Theory + Practical</td>
-                                <td>Core</td>
-                                <td><span class="badge rounded-pill status-badge" style="background:#fff3cd;color:#856404;">Not Mapped</span></td>
-                                <td><button type="button" class="btn btn-sm btn-primary map-course-btn">Map</button></td>
-                            </tr>
+                            {% endfor %}
                         </tbody>
                 </table>
 
@@ -528,9 +497,42 @@ $(document).ready(function () {
         row.find('.course-repo-check').prop('checked', false).prop('disabled', true);
     }
 
-    // Demo only: this is a UI mock of a course repository, nothing here persists to the server.
+    function mapCourses(encCourseIds, onDone) {
+        $.ajax({
+            type: 'POST',
+            url: '/programs/map_courses',
+            data: {
+                csrfmiddlewaretoken: $('#raiseRequestForm input[name=csrfmiddlewaretoken]').val(),
+                program_id: '{{ enc_program_id }}',
+                'course_ids[]': encCourseIds
+            },
+            traditional: true,
+            success: function (response) {
+                if (response.status !== 200) {
+                    Swal.fire({ title: 'Error', text: response.message || 'Could not map the selected course(s).', icon: 'error' });
+                    onDone([]);
+                    return;
+                }
+                onDone(response.mapped_course_ids || []);
+            },
+            error: function () {
+                Swal.fire({ title: 'Error', text: 'Could not map the selected course(s). Please try again.', icon: 'error' });
+                onDone([]);
+            }
+        });
+    }
+
     $('#courseRepoTable').on('click', '.map-course-btn', function () {
-        markCourseRowMapped($(this).closest('tr'));
+        var btn = $(this);
+        var row = btn.closest('tr');
+        btn.prop('disabled', true);
+        mapCourses([row.data('course-id')], function (mappedIds) {
+            if (mappedIds.length) {
+                markCourseRowMapped(row);
+            } else {
+                btn.prop('disabled', false);
+            }
+        });
     });
 
     $('#courseRepoSelectAll').on('change', function () {
@@ -544,12 +546,26 @@ $(document).ready(function () {
     });
 
     $('#mapSelectedBtn').on('click', function () {
-        $('#courseRepoTable .course-repo-check:checked').each(function () {
-            markCourseRowMapped($(this).closest('tr'));
+        var mapBtn = $(this);
+        var $rows = $('#courseRepoTable .course-repo-check:checked').closest('tr');
+        var encCourseIds = $rows.map(function () { return $(this).data('course-id'); }).get();
+        if (!encCourseIds.length) {
+            return;
+        }
+        mapBtn.prop('disabled', true);
+        mapCourses(encCourseIds, function (mappedIds) {
+            $rows.each(function () {
+                var row = $(this);
+                if (mappedIds.indexOf(String(row.data('course-id'))) !== -1) {
+                    markCourseRowMapped(row);
+                }
+            });
+            $('#courseRepoSelectAll').prop('checked', false);
+            mapBtn.prop('disabled', $('#courseRepoTable .course-repo-check:checked').length === 0);
+            if (mappedIds.length) {
+                Swal.fire({ title: 'Mapped!', text: 'Selected courses have been mapped to this program.', icon: 'success', timer: 1200, showConfirmButton: false });
+            }
         });
-        $('#courseRepoSelectAll').prop('checked', false);
-        $(this).prop('disabled', true);
-        Swal.fire({ title: 'Mapped!', text: 'Selected courses have been mapped to this program.', icon: 'success', timer: 1200, showConfirmButton: false });
     });
 
     $('#courseRepoSearch').on('keyup', function () {

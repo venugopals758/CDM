@@ -31,6 +31,7 @@ urlpatterns = [
     path('programs/get_bosco_for_department', hod.get_bosco_for_department, name='get_bosco_for_department'),
     path('programs/delete_course_request', hod.delete_course_request, name='delete_course_request'),
     path('programs/hod_forward_program/<str:id>', hod.hod_forward_program, name='hod_forward_program'),
+    path('programs/map_courses', hod.map_courses, name='map_courses'),
     path('programs/hod_course_request_details/<str:id>', hod.course_request_details, name='hod_course_request_details'),
     path('programs/respond_course_request', hod.respond_course_request, name='respond_course_request'),
 
@@ -40,6 +41,7 @@ urlpatterns = [
     path('programs/save_basic_details', forms.save_basic_details, name='save_basic_details'),
     path('programs/save_program_structure', forms.save_program_structure, name='save_program_structure'),
     path('programs/add_program_structure_row', forms.add_program_structure_row, name='add_program_structure_row'),
+    path('programs/update_program_structure_row', forms.update_program_structure_row, name='update_program_structure_row'),
     path('programs/delete_program_structure_row', forms.delete_program_structure_row, name='delete_program_structure_row'),
     path('programs/save_program_outcomes', forms.save_program_outcomes, name='save_program_outcomes'),
     path('programs/add_program_outcome_row', forms.add_program_outcome_row, name='add_program_outcome_row'),

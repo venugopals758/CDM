@@ -3,7 +3,7 @@
 <input type="hidden" name="program_id" id="program_structure_program_id" value="{{ enc_program_id }}">
 
 {% if not tracks %}
-<label class="form-label mb-2">Course Category Credit Structure &ndash; {{ program.title|default:"Program" }}</label>
+<label class="form-label mb-2">Course Category wise Credit Structure &ndash; {{ program.title|default:"Programme" }}</label>
 
 <div class="table-responsive mb-4">
     <table class="table table-bordered table-sm align-middle mb-0 course-structure-table" id="courseStructureTable_default" data-target="default" data-name-prefix="default_" data-track-id="" data-is-exit="0">
@@ -13,17 +13,22 @@
                 <th style="min-width:110px;">Category Code</th>
                 <th style="min-width:110px;">Credits</th>
                 <th style="min-width:110px;">Percentage (%)</th>
-                <th style="width:40px;">Action</th>
+                <th style="width:150px;">Action</th>
             </tr>
         </thead>
         <tbody id="courseStructureBody_default">
             {% for row in course_structure_default %}
-            <tr class="category-row committed-row">
+            <tr class="category-row committed-row" data-row-id="{{ row.enc_id }}">
                 <td>{{ row.course_category.category }}<input type="hidden" class="committed-category-id" value="{{ row.course_category_id }}"></td>
                 <td>{{ row.course_category.code }}</td>
                 <td class="no_of_credits">{{ row.no_of_credits|default_if_none:"" }}</td>
                 <td class="percentage_of_credits" data-value="{{ row.percentage_of_credits|default_if_none:"0" }}">{{ row.percentage_of_credits|floatformat:2 }}</td>
-                <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger remove-row-btn" data-row-id="{{ row.enc_id }}" title="Remove"><i class="bx bx-trash"></i></button></td>
+                <td class="text-center">
+                    <div class="d-flex gap-1 justify-content-center">
+                        <button type="button" class="btn btn-sm btn-outline-secondary edit-row-btn" title="Edit"><i class="bx bx-edit-alt"></i></button>
+                        <button type="button" class="btn btn-sm btn-outline-danger remove-row-btn" data-row-id="{{ row.enc_id }}" title="Remove"><i class="bx bx-trash"></i></button>
+                    </div>
+                </td>
             </tr>
             {% endfor %}
         </tbody>
@@ -40,7 +45,7 @@
 {% endif %}
 
 {% for track in tracks %}
-<label class="form-label mb-2">Course Category Credit Structure &ndash; {{ track.name }}</label>
+<label class="form-label mb-2">Course Category wise Credit Structure &ndash; {{ track.name }}</label>
 
 <div class="table-responsive mb-4">
     <table class="table table-bordered table-sm align-middle mb-0 course-structure-table" id="courseStructureTable_track_{{ track.id }}" data-target="track_{{ track.id }}" data-name-prefix="track_{{ track.id }}_" data-track-id="{{ track.id }}" data-is-exit="0">
@@ -50,17 +55,22 @@
                 <th style="min-width:110px;">Category Code</th>
                 <th style="min-width:110px;">Credits</th>
                 <th style="min-width:110px;">Percentage (%)</th>
-                <th style="width:40px;">Action</th>
+                <th style="width:150px;">Action</th>
             </tr>
         </thead>
         <tbody id="courseStructureBody_track_{{ track.id }}">
             {% for row in track.rows %}
-            <tr class="category-row committed-row">
+            <tr class="category-row committed-row" data-row-id="{{ row.enc_id }}">
                 <td>{{ row.course_category.category }}<input type="hidden" class="committed-category-id" value="{{ row.course_category_id }}"></td>
                 <td>{{ row.course_category.code }}</td>
                 <td class="no_of_credits">{{ row.no_of_credits|default_if_none:"" }}</td>
                 <td class="percentage_of_credits" data-value="{{ row.percentage_of_credits|default_if_none:"0" }}">{{ row.percentage_of_credits|floatformat:2 }}</td>
-                <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger remove-row-btn" data-row-id="{{ row.enc_id }}" title="Remove"><i class="bx bx-trash"></i></button></td>
+                <td class="text-center">
+                    <div class="d-flex gap-1 justify-content-center">
+                        <button type="button" class="btn btn-sm btn-outline-secondary edit-row-btn" title="Edit"><i class="bx bx-edit-alt"></i></button>
+                        <button type="button" class="btn btn-sm btn-outline-danger remove-row-btn" data-row-id="{{ row.enc_id }}" title="Remove"><i class="bx bx-trash"></i></button>
+                    </div>
+                </td>
             </tr>
             {% endfor %}
         </tbody>
@@ -79,7 +89,7 @@
 <hr class="my-4">
 
 <div id="exitPlanStructureSection" class="{% if not program.has_exit_plan %}d-none{% endif %}">
-    <label class="form-label mb-2">Course Category Credit Structure &ndash; Exit Plan</label>
+    <label class="form-label mb-2">Course Category wise Credit Structure &ndash; Exit Plan</label>
 
     <div class="table-responsive">
         <table class="table table-bordered table-sm align-middle mb-0 course-structure-table" id="courseStructureTable_exit" data-target="exit" data-name-prefix="exit_" data-is-exit="1">
@@ -89,17 +99,22 @@
                     <th style="min-width:110px;">Category Code</th>
                     <th style="min-width:110px;">Credits</th>
                     <th style="min-width:110px;">Percentage (%)</th>
-                    <th style="width:40px;">Action</th>
+                    <th style="width:150px;">Action</th>
                 </tr>
             </thead>
             <tbody id="courseStructureBody_exit">
                 {% for row in course_structure_exit %}
-                <tr class="category-row committed-row">
+                <tr class="category-row committed-row" data-row-id="{{ row.enc_id }}">
                     <td>{{ row.course_category.category }}<input type="hidden" class="committed-category-id" value="{{ row.course_category_id }}"></td>
                     <td>{{ row.course_category.code }}</td>
                     <td class="no_of_credits">{{ row.no_of_credits|default_if_none:"" }}</td>
                     <td class="percentage_of_credits" data-value="{{ row.percentage_of_credits|default_if_none:"0" }}">{{ row.percentage_of_credits|floatformat:2 }}</td>
-                    <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger remove-row-btn" data-row-id="{{ row.enc_id }}" title="Remove"><i class="bx bx-trash"></i></button></td>
+                    <td class="text-center">
+                        <div class="d-flex gap-1 justify-content-center">
+                            <button type="button" class="btn btn-sm btn-outline-secondary edit-row-btn" title="Edit"><i class="bx bx-edit-alt"></i></button>
+                            <button type="button" class="btn btn-sm btn-outline-danger remove-row-btn" data-row-id="{{ row.enc_id }}" title="Remove"><i class="bx bx-trash"></i></button>
+                        </div>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -133,6 +148,8 @@
 
 <style>
     .course-structure-table .committed-row td { background-color: #f8f9fa; }
+    .course-structure-table tr.row-deleting { opacity: 0.4; pointer-events: none; transition: opacity 0.15s ease; }
+    .course-structure-table .add-row-btn { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
 </style>
 
 <script>
@@ -165,6 +182,13 @@ $(document).ready(function () {
             }).get();
         }
 
+        function committedActionsHtml() {
+            return '<div class="d-flex gap-1 justify-content-center">' +
+                '<button type="button" class="btn btn-sm btn-outline-secondary edit-row-btn" title="Edit"><i class="bx bx-edit-alt"></i></button>' +
+                '<button type="button" class="btn btn-sm btn-outline-danger remove-row-btn" title="Remove"><i class="bx bx-trash"></i></button>' +
+                '</div>';
+        }
+
         function categorySelectHtml() {
             var takenIds = committedCategoryIds();
             var html = '<select class="form-select form-select-sm row-category-select">' +
@@ -183,7 +207,7 @@ $(document).ready(function () {
                 '<td><input type="text" class="form-control form-control-sm row-category-code" readonly></td>' +
                 '<td><input type="number" min="0" class="form-control form-control-sm no_of_credits"></td>' +
                 '<td><input type="number" min="0" step="0.01" class="form-control form-control-sm percentage_of_credits"></td>' +
-                '<td class="text-center"><button type="button" class="btn btn-sm btn-success add-row-btn" title="Add"><i class="bx bx-plus"></i></button></td>' +
+                '<td class="text-center"><button type="button" class="btn btn-sm btn-success add-row-btn" title="Save"><i class="bx bx-plus"></i> Save</button></td>' +
                 '</tr>';
         }
 
@@ -276,12 +300,12 @@ $(document).ready(function () {
                     }
 
                     var enteredPercent = parseFloat(fields.percentage_of_credits.val()) || 0;
-                    var committedRow = '<tr class="category-row committed-row">' +
+                    var committedRow = '<tr class="category-row committed-row" data-row-id="' + response.enc_row_id + '">' +
                         '<td>' + catName + '<input type="hidden" class="committed-category-id" value="' + catId + '"></td>' +
                         '<td>' + catCode + '</td>' +
                         '<td class="no_of_credits">' + fields.no_of_credits.val() + '</td>' +
                         '<td class="percentage_of_credits" data-value="' + enteredPercent + '">' + enteredPercent.toFixed(2) + '</td>' +
-                        '<td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger remove-row-btn" data-row-id="' + response.enc_row_id + '" title="Remove"><i class="bx bx-trash"></i></button></td>' +
+                        '<td class="text-center">' + committedActionsHtml() + '</td>' +
                         '</tr>';
 
                     row.replaceWith(committedRow);
@@ -313,30 +337,116 @@ $(document).ready(function () {
                 if (!result.isConfirmed) {
                     return;
                 }
-                btn.prop('disabled', true);
+                var originalBtnHtml = btn.html();
+                row.addClass('row-deleting');
+                btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>');
+                var deleteStartTime = Date.now();
+                function afterMinSpinnerTime(callback) {
+                    var remaining = Math.max(1000 - (Date.now() - deleteStartTime), 0);
+                    setTimeout(callback, remaining);
+                }
                 $.ajax({
                     type: 'POST',
                     url: '/programs/delete_program_structure_row',
                     data: {
                         csrfmiddlewaretoken: $('#programStructureForm input[name=csrfmiddlewaretoken]').val(),
-                        row_id: btn.data('row-id')
+                        row_id: row.data('row-id')
                     },
                     success: function (response) {
                         if (response.status !== 200) {
-                            btn.prop('disabled', false);
-                            Swal.fire({ title: 'Error', text: response.message || 'Could not remove this row.', icon: 'error' });
+                            afterMinSpinnerTime(function () {
+                                row.removeClass('row-deleting');
+                                btn.prop('disabled', false).html(originalBtnHtml);
+                                Swal.fire({ title: 'Error', text: response.message || 'Could not remove this row.', icon: 'error' });
+                            });
                             return;
                         }
-                        row.remove();
-                        refreshActiveRowOptions();
-                        toggleTotalsVisibility();
-                        calculateTotals();
+                        afterMinSpinnerTime(function () {
+                            row.remove();
+                            refreshActiveRowOptions();
+                            toggleTotalsVisibility();
+                            calculateTotals();
+                        });
                     },
                     error: function () {
-                        btn.prop('disabled', false);
-                        Swal.fire({ title: 'Error', text: 'Could not remove this row. Please try again.', icon: 'error' });
+                        afterMinSpinnerTime(function () {
+                            row.removeClass('row-deleting');
+                            btn.prop('disabled', false).html(originalBtnHtml);
+                            Swal.fire({ title: 'Error', text: 'Could not remove this row. Please try again.', icon: 'error' });
+                        });
                     }
                 });
+            });
+        });
+
+        body.on('click', '.edit-row-btn', function () {
+            var row = $(this).closest('tr');
+            var creditsCell = row.find('td.no_of_credits');
+            var percentCell = row.find('td.percentage_of_credits');
+
+            creditsCell.data('original-text', creditsCell.text()).html(
+                '<input type="number" min="0" class="form-control form-control-sm edit-no_of_credits" value="' + creditsCell.text().trim() + '">'
+            );
+            percentCell.data('original-value', percentCell.attr('data-value')).data('original-text', percentCell.text()).html(
+                '<input type="number" min="0" step="0.01" class="form-control form-control-sm edit-percentage_of_credits" value="' + (percentCell.attr('data-value') || '') + '">'
+            );
+
+            row.find('td.text-center').last().empty().append(
+                '<div class="d-flex gap-1 justify-content-center">' +
+                '<button type="button" class="btn btn-sm btn-success save-row-edit-btn" title="Save"><i class="bx bx-check"></i></button>' +
+                '<button type="button" class="btn btn-sm btn-outline-secondary cancel-row-edit-btn" title="Cancel"><i class="bx bx-x"></i></button>' +
+                '</div>'
+            );
+        });
+
+        body.on('click', '.cancel-row-edit-btn', function () {
+            var row = $(this).closest('tr');
+            var creditsCell = row.find('td.no_of_credits');
+            var percentCell = row.find('td.percentage_of_credits');
+
+            creditsCell.text(creditsCell.data('original-text'));
+            percentCell.attr('data-value', percentCell.data('original-value')).text(percentCell.data('original-text'));
+            row.find('td.text-center').last().empty().append(committedActionsHtml());
+        });
+
+        body.on('click', '.save-row-edit-btn', function () {
+            var saveBtn = $(this);
+            var row = saveBtn.closest('tr');
+            var creditsInput = row.find('.edit-no_of_credits');
+            var percentInput = row.find('.edit-percentage_of_credits');
+            var newCredits = creditsInput.val();
+            var newPercent = percentInput.val();
+
+            if (newCredits === '' || newPercent === '') {
+                Swal.fire({ title: 'Incomplete row', text: 'Please fill all the credit fields before saving.', icon: 'warning' });
+                return;
+            }
+
+            saveBtn.prop('disabled', true);
+            $.ajax({
+                type: 'POST',
+                url: '/programs/update_program_structure_row',
+                data: {
+                    csrfmiddlewaretoken: $('#programStructureForm input[name=csrfmiddlewaretoken]').val(),
+                    row_id: row.data('row-id'),
+                    no_of_credits: newCredits,
+                    percentage_of_credits: newPercent
+                },
+                success: function (response) {
+                    if (response.status !== 200) {
+                        saveBtn.prop('disabled', false);
+                        Swal.fire({ title: 'Error', text: response.message || 'Could not save changes.', icon: 'error' });
+                        return;
+                    }
+                    row.find('td.no_of_credits').text(response.no_of_credits);
+                    row.find('td.percentage_of_credits').attr('data-value', response.percentage_of_credits).text(response.percentage_of_credits.toFixed(2));
+                    row.find('td.text-center').last().empty().append(committedActionsHtml());
+                    calculateTotals();
+                },
+                error: function () {
+                    saveBtn.prop('disabled', false);
+                    Swal.fire({ title: 'Error', text: 'Could not save changes. Please try again.', icon: 'error' });
+                }
             });
         });
 

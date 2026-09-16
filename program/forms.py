@@ -66,9 +66,9 @@ def record_bosc_history(user_id, program):
 
 
 OUTCOME_TYPE_LABELS = [
-    ('PEO', 'Program Educational Objectives (PEOs)'),
-    ('PO', 'Program Outcomes (POs)'),
-    ('PSO', 'Program Specific Outcomes (PSOs)'),
+    ('PEO', 'Programme Educational Objectives (PEOs)'),
+    ('PO', 'Programme Outcomes (POs)'),
+    ('PSO', 'Programme Specific Outcomes (PSOs)'),
 ]
 
 
@@ -218,6 +218,7 @@ def save_basic_details(request):
                 'minimum_credits': post.get('minimum_credits') or None,
                 'duration': post.get('duration') or None,
                 'has_exit_plan': post.get('has_exit_plan') == '1',
+                'exit_end_of_year': post.get('exit_end_of_year') or None,
                 'exit_minimum_credits': post.get('exit_minimum_credits') or None,
                 'program_level_credits': post.get('program_level_credits') or None,
                 'program_type_id': post.get('program_type') or None,
@@ -322,6 +323,40 @@ def add_program_structure_row(request):
             )
 
             return JsonResponse({'status': 200, 'enc_row_id': encrypt(row.id)})
+        except Exception as e:
+            ErrorLogs.objects.create(user_id=request.user.id, log=str(e), info=str(request.POST))
+            return JsonResponse({'status': 500, 'message': str(e)})
+    return JsonResponse({'status': 405})
+
+
+@login_required
+@csrf_exempt
+@group_required('BOSCO', 'BOSC')
+def update_program_structure_row(request):
+    if request.method == 'POST':
+        try:
+            row_id = decrypt(request.POST.get('row_id'))
+            row = ProgramTrackCourseStructureMapping.objects.filter(id=row_id).filter(
+                Q(program__created_by_id=request.user.id) | Q(program__pending_at_id=request.user.id)
+            ).select_related('program').first()
+            if not row:
+                return JsonResponse({'status': 404, 'message': 'Row not found.'})
+
+            no_of_credits = request.POST.get('no_of_credits')
+            percentage_of_credits = request.POST.get('percentage_of_credits')
+            if no_of_credits in (None, '') or percentage_of_credits in (None, ''):
+                return JsonResponse({'status': 400, 'message': 'Please fill all the credit fields before saving.'})
+
+            record_bosc_history(request.user.id, row.program)
+            row.no_of_credits = no_of_credits
+            row.percentage_of_credits = percentage_of_credits
+            row.save(update_fields=['no_of_credits', 'percentage_of_credits'])
+
+            return JsonResponse({
+                'status': 200,
+                'no_of_credits': row.no_of_credits,
+                'percentage_of_credits': float(row.percentage_of_credits),
+            })
         except Exception as e:
             ErrorLogs.objects.create(user_id=request.user.id, log=str(e), info=str(request.POST))
             return JsonResponse({'status': 500, 'message': str(e)})

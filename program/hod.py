@@ -281,6 +281,39 @@ def hod_forward_program(request, id):
 
 
 @login_required
+@csrf_exempt
+@group_required('HOD')
+def map_courses(request):
+    if request.method == 'POST':
+        try:
+            program_id = decrypt(request.POST.get('program_id'))
+            enc_course_ids = request.POST.getlist('course_ids[]') or request.POST.getlist('course_ids')
+            if not enc_course_ids:
+                return JsonResponse({'status': 400, 'message': 'Please select at least one course to map.'})
+
+            program = Programs.objects.filter(id=program_id).first()
+            if not program:
+                return JsonResponse({'status': 404, 'message': 'Program not found.'})
+
+            mapped_enc_ids = []
+            for enc_course_id in enc_course_ids:
+                course_id = decrypt(enc_course_id)
+                if not Course.objects.filter(id=course_id, program_id=program.id).exists():
+                    continue
+                ProgramCourseMapping.objects.get_or_create(
+                    program=program, course_id=course_id,
+                    defaults={'mapped_by_id': request.user.id},
+                )
+                mapped_enc_ids.append(enc_course_id)
+
+            return JsonResponse({'status': 200, 'mapped_course_ids': mapped_enc_ids})
+        except Exception as e:
+            ErrorLogs.objects.create(user_id=request.user.id, log=str(e), info=str(request.POST))
+            return JsonResponse({'status': 500, 'message': str(e)})
+    return JsonResponse({'status': 405})
+
+
+@login_required
 @group_required('HOD')
 def course_request_details(request, id):
     dec_id = decrypt(id)

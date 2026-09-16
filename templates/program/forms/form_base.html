@@ -20,65 +20,194 @@
     .modal-header {
         background: #e5f0ef !important;
     }
+
+    /* ===================== Step wizard ===================== */
+    /* .box-container (vendor CSS) already gives the wizard its own card look
+       (background, border, shadow, padding) - just lay the steps out inside it. */
+    .twitter-bs-wizard-nav {
+        display: flex;
+        list-style: none;
+        margin: 0 0 20px;
+        padding: 8px 16px 0;
+    }
+
+    /* The vendor plugin's own connector line (gitam_ui/css/common.css) is sized/positioned
+       for its original markup and lands in the wrong place with this layout, bleeding into
+       the content below the stepper - replaced by the per-segment lines below. */
+    .twitter-bs-wizard .twitter-bs-wizard-nav:before {
+        display: none !important;
+    }
+
+    .twitter-bs-wizard-nav .nav-item {
+        flex: 1;
+        position: relative;
+        text-align: center;
+    }
+
+    .twitter-bs-wizard-nav .nav-item:not(:first-child)::before {
+        content: '';
+        position: absolute;
+        top: 20px;
+        left: -50%;
+        width: 100%;
+        height: 2px;
+        background: #dee2e6;
+        z-index: 0;
+    }
+
+    .twitter-bs-wizard-nav .nav-item:has(.step-number .fa-check)::before,
+    .twitter-bs-wizard-nav .nav-item:has(.step-number .fa-check) + .nav-item::before {
+        background: #007367;
+    }
+
+    .twitter-bs-wizard-nav .nav-link {
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        display: flex !important;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        position: relative;
+        z-index: 1;
+        cursor: pointer;
+        text-decoration: none !important;
+    }
+
+    .twitter-bs-wizard-nav .step-number {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #fff;
+        border: 2px solid #dee2e6;
+        color: #adb5bd;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+    }
+
+    .twitter-bs-wizard-nav .step-title {
+        font-size: 0.85rem;
+        color: #6c757d;
+        font-weight: 500;
+    }
+
+    .twitter-bs-wizard-nav .nav-link:hover .step-number {
+        border-color: #007367;
+    }
+
+    .twitter-bs-wizard-nav .step-number:has(.fa-check) {
+        background: #007367;
+        border-color: #007367;
+        color: #fff;
+    }
+
+    .twitter-bs-wizard-nav .nav-link.active .step-number {
+        background: #007367;
+        border-color: #007367;
+        color: #fff;
+        box-shadow: 0 0 0 4px rgba(0, 115, 103, 0.15);
+    }
+
+    .twitter-bs-wizard-nav .nav-link.active .step-title {
+        color: #007367;
+        font-weight: 700;
+    }
+
+    .form-footer .btn {
+        padding: 0.375rem 0.9rem;
+        font-size: 0.85rem;
+    }
+
+    .form-footer .btn i {
+        vertical-align: -1px;
+        margin: 0 2px;
+    }
+
+    .form-footer.d-flex {
+        gap: 4px;
+    }
+
+    .form-footer li {
+        margin: 0 !important;
+    }
+
+    .btn-secondary {
+        margin-left: 5px!important;
+    }
 </style>
 <head>
     <script>
+// Single source of truth for the step indicator: steps before stepNumber show a checkmark
+// (teal, done), stepNumber itself is the active step (its plain number, never a checkmark -
+// going back to review an earlier step should not hide its number), later steps are untouched.
+// Next, Previous and clicking a step's nav-pill directly all funnel through this.
+function goToStep(stepNumber) {
+    $('.twitter-bs-wizard-tab-content > .tab-pane').removeClass('active show');
+    $('#stepTab' + stepNumber).addClass('active show');
+
+    $('.twitter-bs-wizard-nav .nav-item').each(function (index) {
+        let thisStepNum = index + 1;
+        let $link = $(this).find('.nav-link');
+        let $stepNumberSpan = $link.find('.step-number');
+        let paddedNum = (thisStepNum < 10 ? '0' : '') + thisStepNum;
+
+        $link.removeClass('active');
+
+        if (thisStepNum < stepNumber) {
+            $stepNumberSpan.html('<i class="fa fa-check"></i>');
+        } else {
+            $stepNumberSpan.text(paddedNum);
+            if (thisStepNum === stepNumber) {
+                $link.addClass('active');
+            }
+        }
+    });
+}
+
 $(document.body).on('click', '.next_btn', function () {
-    let currentStep = parseInt($(this).data('id'));
-    let nextStep = currentStep + 1;
-    $(`.step0${currentStep}`).removeClass('active');
-    $(`.step0${nextStep}`).addClass('active');
-    $(`#stepTab${nextStep}`).addClass('active').siblings().removeClass('active');
+    goToStep(parseInt($(this).data('id')) + 1);
 });
 
 $(document.body).on('click', '.prev_btn', function () {
-    let currentStep = parseInt($(this).data('id'));
-    let prevStep = currentStep - 1;
-    $(`.step0${currentStep}`).removeClass('active');
-    $(`.step0${prevStep}`).addClass('active');
-    $(`#stepTab${prevStep}`).addClass('active').siblings().removeClass('active');
+    goToStep(parseInt($(this).data('id')) - 1);
 });
 
-$('.step').click(function () {
-    $('.step').removeClass('active');
-    $(this).addClass('active');
+$(document.body).on('click', '.step01, .step02, .step03', function () {
+    goToStep(parseInt($(this).data('tab').replace('stepTab', '')));
 });
 
-$('.step01').click(function () {
-    $('#stepTab1').addClass('active').siblings().removeClass('active');
+$(document).ready(function () {
+    let initialTabId = $('.twitter-bs-wizard-tab-content > .tab-pane.active').attr('id');
+    goToStep(initialTabId ? parseInt(initialTabId.replace('stepTab', '')) : 1);
 });
-
-$(document.body).on('click', '.step02', function () {
-    $('#stepTab2').addClass('active').siblings().removeClass('active');
-});
-
-$(document.body).on('click', '.step03', function () {
-    $('#stepTab3').addClass('active').siblings().removeClass('active');
-});
-
 </script>
 </head>
 <section class="content-container contentContainer" id="homeSection">
     <div>
         <div class="d-flex align-items-center justify-content-between mb-2">
-            <h5 class="text-left mb-0" style="color:#007367;">Add Program</h5>
+            <h5 class="text-left mb-0" style="color:#007367;">Add Programme</h5>
             <a href="/programs" class="btn btn_gitam_outline rounded-pill btn-sm d-inline-flex align-items-center gap-1" id="backBtn" style="white-space:nowrap;">
                 <i class="bx bx-arrow-back"></i><span>Back</span>
             </a>
         </div>
         <div class="form-body page-shown">
             <div id="basic-pills-wizard" class="twitter-bs-wizard">
-                <div class="box-container" style="margin-bottom:13px!important;">
+                <div class="box-container" style="margin-bottom:1px!important;">
                     <ul class="twitter-bs-wizard-nav nav nav-pills nav-justified" role="tablist">
-                            <a href="#" class="nav-link tab-link step step01 {% if not program %}active{% endif %}" data-tab="stepTab1">
+                        <li class="nav-item" role="presentation">
+                            <a href="#" class="nav-link tab-link step step01 {% if not program or program.active_step == 1 %}active{% endif %}" data-tab="stepTab1">
                                 <span class="step-number">{% if program %}<i class="fa fa-check"></i>{% else %}1{% endif %}</span>
                                 <span class="step-title">Basic Details</span>
                             </a>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <a href="#" class="nav-link tab-link {% if program and program.active_step == 2 %}step step02 {% if program.active_step == 2 %}active{% endif %}{% endif %}" data-tab="stepTab2">
+                            <a href="#" class="nav-link tab-link {% if program and program.active_step >= 2 %}step step02 {% if program.active_step == 2 %}active{% endif %}{% endif %}" data-tab="stepTab2">
                                 <span class="step-number">{% if 2 in completed_steps %}<i class="fa fa-check"></i>{% else %}02{% endif %}</span>
-                                <span class="step-title">Program Structure</span>
+                                <span class="step-title">Programme Structure</span>
                             </a>
                         </li>
                         <li class="nav-item" role="presentation">
@@ -89,9 +218,9 @@ $(document.body).on('click', '.step03', function () {
                         </li>
                     </ul>
                 </div>
-                <div class="box-container">
+                <div class="box-container" style="border-top:0px!important;">
                     <div class="tab-content twitter-bs-wizard-tab-content">
-                        <div class="tab-pane {% if not program %}active show{% endif %}" id="stepTab1">
+                        <div class="tab-pane {% if not program or program.active_step == 1 %}active show{% endif %}" id="stepTab1">
                             {% include 'program/forms/basic_details.html' %}
                         </div>
                         <div class="tab-pane {% if program and program.active_step == 2 %}active show{% endif %}" id="stepTab2">

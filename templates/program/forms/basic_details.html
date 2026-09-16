@@ -36,7 +36,7 @@
         </select>
     </div>
     <div class="col-md-3">
-        <label class="form-label">Program Type</label>
+        <label class="form-label">Programme Type</label>
         <select class="form-select" id="program_type" name="program_type" required>
             <option value="" selected disabled hidden>Select</option>
             {% for t in program_type %}
@@ -46,11 +46,11 @@
     </div>
    
     <div class="col-md-3">
-        <label class="form-label">Temporary Program Title</label>
-        <input type="text" autocomplete="off" name="temp_program_title" id="temp_program_title" class="form-control" placeholder="Enter temporary program title" value="{% if program.title %}{{ program.title }}{% endif %}" required>
+        <label class="form-label">Temporary Programme Title</label>
+        <input type="text" autocomplete="off" name="temp_program_title" id="temp_program_title" class="form-control" placeholder="Enter temporary programme title" value="{% if program.title %}{{ program.title }}{% endif %}" required>
     </div>
     <div class="col-md-3">
-        <label class="form-label">Program Code</label>
+        <label class="form-label">Programme Code</label>
         <input type="text" autocomplete="off" name="code" id="program_code" class="form-control" placeholder="e.g. BT-CSE" value="{% if program.code %}{{ program.code }}{% endif %}" required>
     </div>
     <div class="col-md-3">
@@ -59,7 +59,7 @@
     </div>
 
     <div class="col-md-3">
-        <label class="form-label">Program Level</label>
+        <label class="form-label">Programme Level</label>
         <select class="form-select" id="program_level" name="program_level" required>
             <option value="" selected disabled hidden>Select</option>
             {% for l in program_levels %}
@@ -68,7 +68,7 @@
         </select>
     </div>
     <div class="col-md-3">
-        <label class="form-label">Program Credit Level</label>
+        <label class="form-label">Programme Credit Level</label>
         <select class="form-select" id="program_level_credits" name="program_level_credits" required>
             <option value="" selected disabled hidden>Select</option>
 
@@ -90,17 +90,22 @@
 
 <div class="row g-3">
     <div class="col-md-3">
-        <label class="form-label">Duration of Program</label>
-        <input type="number" min="1" autocomplete="off" name="duration" id="duration" class="form-control" placeholder="Select Program Level and School" value="{% if program.duration %}{{ program.duration }}{% endif %}" readonly required>
+        <label class="form-label">Duration of Programme(Years)</label>
+        <input type="number" min="1" autocomplete="off" name="duration" id="duration" class="form-control" placeholder="Select Programme Level and School" value="{% if program.duration %}{{ program.duration }}{% endif %}" readonly required>
     </div>
     <div class="col-md-3">
-        <label class="form-label">Do you have an Exit Plan for this program?</label>
+        <label class="form-label">Do you have an Exit Plan for this programme?</label>
         <select class="form-select" id="has_exit_plan" disabled>
-            <option value="" selected disabled hidden>Select Program Level and School</option>
+            <option value="" selected disabled hidden>Select Programme Level and School</option>
             <option value="1" {% if program.has_exit_plan %}selected{% endif %}>Yes</option>
             <option value="0" {% if program and not program.has_exit_plan %}selected{% endif %}>No</option>
         </select>
         <input type="hidden" name="has_exit_plan" id="has_exit_plan_value" value="{% if program.has_exit_plan %}1{% elif program %}0{% endif %}">
+    </div>
+
+    <div class="col-md-3 {% if not program.has_exit_plan %}d-none{% endif %}" id="exitEndOfYearWrapper">
+        <label class="form-label">End of Year</label>
+        <input type="number" min="1" autocomplete="off" name="exit_end_of_year" id="exit_end_of_year" class="form-control" placeholder="e.g. 3" value="{% if program.exit_end_of_year %}{{ program.exit_end_of_year }}{% endif %}">
     </div>
 
     <div class="col-md-3 {% if not program.has_exit_plan %}d-none{% endif %}" id="exitMinimumCreditsWrapper">
@@ -109,10 +114,10 @@
     </div>
 
     <div class="col-md-3">
-        <label class="form-label">Upload Program Structure (PDF) </label>
+        <label class="form-label">Upload Programme Structure (PDF) </label>
         <input type="file" name="program_structure_pdf" id="program_structure_pdf" class="form-control" accept="application/pdf" {% if program.program_structure_pdf %}style="display:none;"{% endif %}>
         <div id="programStructurePdfDisplay" class="form-control d-flex align-items-center justify-content-between {% if not program.program_structure_pdf %}d-none{% endif %}">
-            <span class="text-truncate" id="programStructurePdfName">Program Structure</span>
+            <span class="text-truncate" id="programStructurePdfName">Programme Structure</span>
             <span class="d-flex gap-2 ms-2">
                 <a href="{% if program.program_structure_pdf %}{{ program.program_structure_pdf.url }}{% endif %}" target="_blank" id="programStructurePdfPreviewLink" title="Preview PDF">
                     <i class="bx bx-show" style="color:#007367;font-size:18px;"></i>
@@ -132,13 +137,13 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header" style="background:#e5f0ef;">
-                <h5 class="modal-title" id="chooseExistingProgramLabel" style="color:#007367;">Choose Existing Program</h5>
+                <h5 class="modal-title" id="chooseExistingProgramLabel" style="color:#007367;">Choose Existing Programme</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <label class="form-label">Program</label>
+                <label class="form-label">Programme</label>
                 <select class="form-select" id="existing_program_modal_select">
-                    <option value="" selected disabled hidden>Select existing program</option>
+                    <option value="" selected disabled hidden>Select existing programme</option>
                     {% for p in existing_programs %}
                     <option value="{{ p.id }}">{{ p.name }}</option>
                     {% endfor %}
@@ -157,7 +162,7 @@
 <div class="row g-3">
     
     <div class="col-md-4">
-        <label class="form-label">Program Head / HOD</label>
+        <label class="form-label">Programme Head / HOD</label>
         <select class="form-select" id="program_head" name="program_head" required>
             <option value="" selected disabled hidden>Select a School first</option>
         </select>
@@ -191,11 +196,13 @@ $(document).ready(function () {
 
     var hasExistingProgramStructurePdf = {% if program.program_structure_pdf %}true{% else %}false{% endif %};
 
-    // Show "Minimum Credits for Exit Plan" only when the Exit Plan answer is Yes
+    // Show "End of Year" and "Minimum Credits for Exit Plan" only when the Exit Plan answer is Yes
     $('#has_exit_plan').on('change', function () {
         $('#has_exit_plan_value').val(this.value);
+        $('#exitEndOfYearWrapper').toggleClass('d-none', this.value !== '1');
         $('#exitMinimumCreditsWrapper').toggleClass('d-none', this.value !== '1');
         if (this.value !== '1') {
+            $('#exit_end_of_year').val('');
             $('#exit_minimum_credits').val('');
         }
     });
@@ -210,6 +217,7 @@ $(document).ready(function () {
             $('#duration').val('');
             $('#has_exit_plan').val('').prop('disabled', true);
             $('#has_exit_plan_value').val('');
+            $('#exitEndOfYearWrapper').addClass('d-none');
             $('#exitMinimumCreditsWrapper').addClass('d-none');
             return;
         }
@@ -223,8 +231,9 @@ $(document).ready(function () {
                     $('#duration').val('');
                     $('#has_exit_plan').val('').prop('disabled', true);
                     $('#has_exit_plan_value').val('');
+                    $('#exitEndOfYearWrapper').addClass('d-none');
                     $('#exitMinimumCreditsWrapper').addClass('d-none');
-                    Swal.fire({ title: 'Not configured', text: 'No Duration / Exit Plan mapping found for this Program Level and School.', icon: 'warning' });
+                    Swal.fire({ title: 'Not configured', text: 'No Duration / Exit Plan mapping found for this Programme Level and School.', icon: 'warning' });
                     return;
                 }
                 $('#duration').val(response.duration);
@@ -234,6 +243,7 @@ $(document).ready(function () {
                 $('#duration').val('');
                 $('#has_exit_plan').val('').prop('disabled', true);
                 $('#has_exit_plan_value').val('');
+                $('#exitEndOfYearWrapper').addClass('d-none');
                 $('#exitMinimumCreditsWrapper').addClass('d-none');
             }
         });
@@ -261,7 +271,7 @@ $(document).ready(function () {
             url: '/programs/get_hods_by_school',
             data: { school: schoolId },
             success: function (response) {
-                $programHead.empty().append('<option value="" selected disabled hidden>Select Program Head / HOD</option>');
+                $programHead.empty().append('<option value="" selected disabled hidden>Select Programme Head / HOD</option>');
                 (response.hods || []).forEach(function (h) {
                     var label = [h.emp_id, [h.first_name, h.last_name].filter(Boolean).join(' '), h.campus, h.school_code, h.dept_code, h.designation]
                         .filter(Boolean).join(' | ');
@@ -274,7 +284,7 @@ $(document).ready(function () {
                 $programHead.trigger('change');
             },
             error: function () {
-                $programHead.empty().append('<option value="" selected disabled hidden>Select Program Head / HOD</option>').trigger('change');
+                $programHead.empty().append('<option value="" selected disabled hidden>Select Programme Head / HOD</option>').trigger('change');
             }
         });
     }
@@ -304,7 +314,7 @@ $(document).ready(function () {
     });
 
     // Enable search on the three long lookup dropdowns
-    $('#program_head').select2({ placeholder: 'Select Program Head / HOD', width: '100%' });
+    $('#program_head').select2({ placeholder: 'Select Programme Head / HOD', width: '100%' });
     $('#school').select2({ placeholder: 'Select School', width: '100%' });
     $('#program_stream').select2({ placeholder: 'Select PO Stream', width: '100%' });
 
@@ -369,6 +379,11 @@ $(document).ready(function () {
             program_batch:        { required: true },
             duration:             { required: true },
             has_exit_plan:        { required: true },
+            exit_end_of_year: {
+                required: function () {
+                    return $('#has_exit_plan').val() === '1';
+                }
+            },
             exit_minimum_credits: {
                 required: function () {
                     return $('#has_exit_plan').val() === '1';
@@ -392,7 +407,7 @@ $(document).ready(function () {
             }
         },
         messages: {
-            existing_program: { required: 'Please choose an existing program.' }
+            existing_program: { required: 'Please choose an existing programme.' }
         },
         errorPlacement: function (error, element) {
             if (element.hasClass('select2-hidden-accessible')) {
